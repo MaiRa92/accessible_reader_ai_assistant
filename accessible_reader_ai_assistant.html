@@ -1,0 +1,2381 @@
+<!DOCTYPE html>
+<!--
+  Universal Access Reader & AI Tutor
+  Created by Maria I. Tranou · © 2026
+  Designed with Universal Design for Learning (UDL), W3C COGA and WCAG 2.2.
+-->
+<html lang="el" data-mode="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="Maria I. Tranou">
+<meta name="description" content="Universal Access Reader – accessible reading, translation and AI tutoring, designed with UDL, COGA and WCAG 2.2. Created by Maria I. Tranou.">
+<meta name="theme-color" content="#FFFFFF">
+<title>Universal Access Reader & AI Tutor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600&family=Noto+Sans:wght@400;500;600;700&family=Noto+Serif:wght@400;600&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+/* =========================================================
+   Design tokens — set at runtime by applySettings()
+   Every colour pair is contrast-checked (WCAG 2.2) in JS.
+   ========================================================= */
+:root{
+  --bg:#F3F5F8; --surface:#FFFFFF; --surface-2:#F1F4F8;
+  --text:#1B1F24; --muted:#4B5563; --border:#D9DEE5; --border-strong:#6B7280;
+  --accent:#1D4ED8; --accent-fill:#1D4ED8; --on-accent:#FFFFFF; --accent-soft:#E8EEFC;
+  --focus:#1D4ED8; --danger:#B91C1C; --success:#15803D;
+  --read-text:var(--text); --read-bg:var(--surface); --read-surface-2:#F1F4F8;
+  --read-muted:#4B5563; --read-accent:#1D4ED8; --read-on-accent:#FFFFFF;
+  --read-accent-soft:#E8EEFC; --read-border:#9AA3AF;
+  --b0:#0072B2; --b1:#D55E00; --b2:#00805C; --b3:#B4407F; --b4:#9A6700; --b5:#2A7AB0;
+  --font-ui:"Noto Sans","Open Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-read:"Open Sans",sans-serif;
+  --fs:1; --lh:1.7; --ls:0em; --ws:0em; --measure:70ch;
+  --radius:16px;
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 6px 18px rgba(16,24,40,.06);
+}
+[data-mode="dark"]{--shadow:0 1px 2px rgba(0,0,0,.45),0 6px 18px rgba(0,0,0,.25)}
+[data-mode="hc"]{--shadow:none}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-ui);font-size:1rem;line-height:1.55;transition:background-color .2s,color .2s;min-height:100vh;display:flex;flex-direction:column}
+h1,h2,h3,h4,h5{margin:0;line-height:1.3}
+p{margin:0 0 .9em}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+[hidden]{display:none!important}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+html[data-reduce-motion] *,html[data-reduce-motion] *::before,html[data-reduce-motion] *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+
+.skip-link{position:absolute;inset-inline-start:12px;top:-80px;z-index:200;background:var(--accent-fill);color:var(--on-accent);padding:12px 18px;border-radius:10px;font-weight:700;text-decoration:none}
+.skip-link:focus{top:12px}
+
+/* ---------- Header ---------- */
+.app-header{position:sticky;top:0;z-index:30;background:var(--surface);border-bottom:1px solid var(--border)}
+[data-mode="hc"] .app-header{border-bottom:2px solid var(--text)}
+@media (max-width:760px){.app-header{position:static}}
+.header-inner{max-width:1320px;margin:0 auto;padding:12px 20px;display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand-mark{width:46px;height:46px;flex:none;border-radius:14px;display:grid;place-items:center;background:var(--accent-fill);color:var(--on-accent);font-size:1.4rem}
+.brand h1{font-size:1.2rem;font-weight:700}
+.brand-sub{margin:2px 0 0;font-size:.86rem;color:var(--muted)}
+.header-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.lang-pick{display:inline-flex;align-items:center;gap:8px;border:2px solid var(--border-strong);border-radius:12px;padding-inline-start:12px;background:var(--surface);min-height:44px}
+.lang-pick i{color:var(--accent)}
+.lang-pick label{font-weight:600;font-size:.9rem;white-space:nowrap}
+.lang-pick select{border:0;min-height:40px;width:auto;padding:0 8px;background:transparent;font-weight:600;cursor:pointer}
+.segmented{display:inline-flex;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:12px;padding:3px;gap:3px}
+.seg-btn{min-height:40px;padding:0 12px;border:0;border-radius:9px;background:transparent;color:var(--text);font-weight:600;font-size:.9rem;display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.seg-btn:hover{background:var(--surface)}
+.seg-btn[aria-pressed="true"]{background:var(--accent-fill);color:var(--on-accent)}
+
+/* ---------- Layout ---------- */
+.layout{max-width:1320px;width:100%;margin:0 auto;padding:24px 20px 40px;display:grid;gap:24px;grid-template-columns:minmax(0,1fr);flex:1}
+@media (min-width:1080px){.layout{grid-template-columns:minmax(0,1.6fr) minmax(360px,1fr);align-items:start}}
+.col-main,.col-side{display:flex;flex-direction:column;gap:24px;min-width:0}
+main:focus{outline:none}
+
+/* ---------- Footer ---------- */
+.app-footer{background:var(--surface);border-top:1px solid var(--border);margin-top:auto}
+[data-mode="hc"] .app-footer{border-top:2px solid var(--text)}
+.footer-inner{max-width:1320px;margin:0 auto;padding:18px 20px;display:flex;flex-wrap:wrap;gap:6px 24px;align-items:center;justify-content:space-between}
+.footer-inner p{margin:0}
+.creator{display:flex;align-items:center;gap:10px;font-size:.95rem}
+.creator i{color:var(--accent)}
+.footer-meta{color:var(--muted);font-size:.88rem}
+
+/* ---------- Cards ---------- */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+@media (min-width:640px){.card{padding:24px}}
+[data-mode="hc"] .card{border:2px solid var(--text)}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.card-head h2{font-size:1.15rem;font-weight:700;display:flex;align-items:center;gap:10px}
+.step{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-weight:700;font-size:.95rem;border:2px solid var(--accent)}
+.card-icon{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-size:1rem}
+[data-mode="hc"] .card-icon,[data-mode="hc"] .step{border:2px solid var(--text)}
+.card-desc{margin:-4px 0 14px;color:var(--muted);font-size:.95rem}
+.head-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border-radius:10px;border:2px solid transparent;font-weight:600;font-size:.95rem;cursor:pointer;text-decoration:none;transition:background-color .15s,border-color .15s,box-shadow .15s;white-space:nowrap}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn-primary{background:var(--accent-fill);color:var(--on-accent)}
+.btn-primary:hover:not(:disabled){box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--accent-fill)}
+.btn-secondary{background:var(--surface);color:var(--text);border-color:var(--border-strong)}
+.btn-secondary:hover:not(:disabled){background:var(--surface-2)}
+.btn-ghost{background:transparent;color:var(--accent)}
+.btn-ghost:hover:not(:disabled){background:var(--surface-2)}
+.btn-sm{min-height:40px;padding:0 12px;font-size:.9rem}
+.btn-lg{min-height:50px;padding:0 22px;font-size:1rem}
+.btn-block{width:100%}
+.btn-icon{width:44px;padding:0}
+[data-mode="hc"] .btn{border-color:var(--text)}
+[data-mode="hc"] .btn-primary:hover:not(:disabled){box-shadow:0 0 0 3px var(--bg),0 0 0 6px var(--text)}
+
+/* ---------- Form controls ---------- */
+.label{display:block;font-weight:600;margin-bottom:6px}
+.hint{color:var(--muted);font-size:.9rem;margin:0 0 8px}
+.field{margin-bottom:14px}
+textarea,select,input[type="text"],input[type="password"]{width:100%;background:var(--surface);color:var(--text);border:2px solid var(--border-strong);border-radius:10px;padding:10px 12px;min-height:44px}
+textarea:hover,select:hover,input[type="text"]:hover,input[type="password"]:hover{border-color:var(--accent)}
+textarea.reading-input{font-family:var(--font-read);line-height:1.65;resize:vertical;min-height:160px;color:var(--read-text);background:var(--read-bg)}
+input[type="range"]{width:100%;accent-color:var(--accent-fill);min-height:30px;cursor:pointer}
+input[type="checkbox"],input[type="radio"]{accent-color:var(--accent-fill);width:20px;height:20px}
+input[type="color"]{width:52px;height:44px;padding:2px;border:2px solid var(--border-strong);border-radius:10px;background:var(--surface);cursor:pointer}
+.row-between{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
+.convert-group{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.convert-group .label{margin:0}
+.convert-group select{width:auto;max-width:100%}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:460px){.two{grid-template-columns:1fr}}
+.range-row{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:center;margin-bottom:14px}
+.range-row input[type="range"]{grid-column:1/-1}
+.range-row output{font-weight:700;font-variant-numeric:tabular-nums;color:var(--accent)}
+fieldset{border:0;padding:0;margin:0;min-width:0}
+legend{padding:0}
+fieldset:disabled{opacity:.5}
+.check{display:flex;gap:10px;align-items:flex-start;padding:10px 0;cursor:pointer}
+.check input{margin-top:2px;flex:none}
+.check small{display:block;color:var(--muted);font-size:.86rem}
+.inline-row{display:flex;gap:8px}
+.inline-row input{flex:1}
+
+.radio-row{display:flex;gap:8px;flex-wrap:wrap}
+.choice{position:relative}
+.choice input{position:absolute;opacity:0;width:1px;height:1px}
+.choice span{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;border:2px solid var(--border-strong);border-radius:999px;cursor:pointer;font-weight:600;font-size:.9rem;background:var(--surface)}
+.choice input:checked+span{background:var(--accent-fill);color:var(--on-accent);border-color:var(--accent-fill)}
+.choice input:checked+span::before{content:"\f00c";font-family:"Font Awesome 6 Free";font-weight:900}
+.choice input:focus-visible+span{outline:3px solid var(--focus);outline-offset:2px}
+
+/* ---------- Reader ---------- */
+.reader-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.size-ctl{display:inline-flex;align-items:center;border:2px solid var(--border-strong);border-radius:10px;overflow:hidden;background:var(--surface)}
+.size-ctl button{min-height:40px;min-width:44px;border:0;background:transparent;color:var(--text);font-weight:700;cursor:pointer}
+.size-ctl button:hover{background:var(--surface-2)}
+.size-ctl output{min-width:58px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums;border-inline:1px solid var(--border);line-height:40px}
+
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--border);overflow-x:auto;scrollbar-width:thin}
+[data-mode="hc"] .tabs{border-bottom-color:var(--text)}
+.tab{flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;min-height:50px;padding:0 14px;border:0;background:transparent;color:var(--muted);font-weight:600;cursor:pointer;border-bottom:4px solid transparent;margin-bottom:-2px;border-radius:10px 10px 0 0}
+.tab:hover{color:var(--text);background:var(--surface-2)}
+.tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent);background:var(--accent-soft);font-weight:700}
+[data-mode="hc"] .tab[aria-selected="true"]{text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:6px}
+.tab .count{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 7px;border-radius:12px;background:var(--surface);color:var(--text);font-size:.8rem;border:1px solid var(--border-strong)}
+.tab .count:empty{display:none}
+
+.reading{position:relative;background:var(--read-bg);color:var(--read-text);font-family:var(--font-read);font-size:calc(1.125rem * var(--fs));line-height:var(--lh);letter-spacing:var(--ls);word-spacing:var(--ws);border:1px solid var(--read-border);border-top:0;border-radius:0 0 14px 14px;padding:26px 22px;min-height:440px}
+@media (max-width:600px){.reading{padding:20px 14px}}
+.reading :is(p,li,h3,h4,.callout,.lead){max-width:var(--measure)}
+.tabpanel:focus-visible{outline-offset:8px}
+.doc-title{font-size:1.5em;margin:0 0 .6em;color:var(--read-text)}
+.sec-title{font-size:1.1em;margin:1.7em 0 .75em;display:flex;align-items:center;gap:.55em;color:var(--read-accent)}
+.tabpanel>.sec-title:first-child,.tabpanel>section:first-child>.sec-title:first-child{margin-top:0}
+.lead{color:var(--read-muted);margin:-.4em 0 1em}
+
+.callout{display:flex;gap:14px;background:var(--read-accent-soft);border:2px solid var(--read-accent);border-inline-start-width:7px;border-radius:12px;padding:14px 18px;margin:0 0 1.2em}
+.callout-icon{color:var(--read-accent);font-size:1.25em;padding-top:.1em}
+.callout-label{font-weight:700;margin:0 0 .15em}
+.callout p:last-child{margin:0}
+
+.keypoints{list-style:none;padding:0;margin:0;display:grid;gap:.6em}
+.keypoints li{display:flex;gap:.75em;align-items:flex-start;padding:.65em .9em;border-radius:10px;background:var(--read-surface-2);border-inline-start:4px solid var(--read-accent)}
+.kp-icon{color:var(--read-accent);flex:none;margin-top:.12em}
+
+.concept-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.concept{border:1px solid var(--read-border);border-top:6px solid var(--read-accent);border-radius:12px;padding:14px 16px;background:var(--read-bg)}
+.concept h5{font-size:1.02em;margin:.45em 0 .3em}
+.concept p{margin:0;font-size:.95em}
+.concept-num{display:inline-grid;place-items:center;width:1.8em;height:1.8em;border-radius:50%;background:var(--read-accent);color:var(--read-on-accent);font-weight:700;font-size:.85em}
+
+/* Tables */
+.table-block{margin-bottom:2em}
+.table-caption-text{color:var(--read-muted);margin:-.35em 0 .75em;font-size:.95em}
+.table-wrap{overflow-x:auto;border:1px solid var(--read-border);border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:.95em}
+th,td{padding:.75em 1em;text-align:start;vertical-align:top;border-bottom:1px solid var(--read-border)}
+thead th{background:var(--read-accent-soft);color:var(--read-text);font-weight:700;border-bottom:3px solid var(--read-accent)}
+tbody tr:nth-child(even){background:var(--read-surface-2)}
+tbody th{font-weight:700}
+tbody tr:last-child>*{border-bottom:0}
+@media (max-width:600px){
+  .stackable thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+  .stackable,.stackable tbody,.stackable tr,.stackable th,.stackable td{display:block;width:100%}
+  .stackable tr{border-bottom:2px solid var(--read-border);padding:.5em 0}
+  .stackable th,.stackable td{border:0;padding:.3em 1em}
+  .stackable td::before,.stackable tbody th::before{content:attr(data-label);display:block;font-weight:700;font-size:.82em;color:var(--read-muted)}
+}
+
+/* Mind map */
+.mindmap{display:flex;flex-direction:column;align-items:center;margin-bottom:2.2em}
+.mm-center{background:var(--read-accent);color:var(--read-on-accent);padding:.75em 1.5em;border-radius:999px;font-weight:700;font-size:1.15em;text-align:center;max-width:min(100%,34ch)}
+.mm-stem{width:3px;height:1.4em;background:var(--read-border)}
+.mm-branches{list-style:none;margin:0;padding:1.4em 0 0;width:100%;display:grid;grid-template-columns:repeat(var(--cols,3),minmax(0,1fr));gap:1em;border-top:3px solid var(--read-border)}
+.mm-branch{position:relative;overflow-wrap:break-word;min-width:0;border:2px solid var(--branch);border-top-width:7px;border-radius:14px;padding:.85em 1em;background:var(--read-bg);max-width:none!important}
+.mm-branch::before{content:"";position:absolute;top:calc(-1.4em - 10px);inset-inline-start:50%;width:3px;height:1.4em;background:var(--read-border);transform:translateX(-50%)}
+.mm-branch-head{display:flex;align-items:center;gap:.6em;margin-bottom:.45em}
+.mm-num{display:inline-grid;place-items:center;flex:none;width:1.9em;height:1.9em;border-radius:50%;border:3px solid var(--branch);font-weight:700;font-size:.85em}
+.mm-branch ul{margin:0;padding-inline-start:1.2em}
+.mm-branch li{margin:.2em 0}
+.mindmap.tree{align-items:stretch}
+.tree .mm-center{align-self:flex-start}
+.tree .mm-stem{margin-inline-start:1.4em}
+.tree .mm-branches{grid-template-columns:1fr;border-top:0;border-inline-start:3px solid var(--read-border);padding:.6em 0 0;padding-inline-start:1.2em;margin-inline-start:1.4em;width:auto}
+.tree .mm-branch::before{top:1.1em;inset-inline-start:calc(-1.2em - 2px);width:1.2em;height:3px;transform:none}
+@media (max-width:600px){
+  .mindmap{align-items:stretch}
+  .mm-center{align-self:flex-start}
+  .mm-stem{margin-inline-start:1.4em}
+  .mm-branches{grid-template-columns:1fr;border-top:0;border-inline-start:3px solid var(--read-border);padding:.6em 0 0;padding-inline-start:1.2em;margin-inline-start:1.4em;width:auto}
+  .mm-branch::before{top:1.1em;inset-inline-start:calc(-1.2em - 2px);width:1.2em;height:3px;transform:none}
+}
+
+/* Flow */
+.flow{list-style:none;padding:0;margin:0;display:grid;gap:2.3em}
+.flow-step{position:relative;display:flex;gap:1em;align-items:flex-start;border:2px solid var(--read-border);border-radius:14px;padding:1em 1.1em;background:var(--read-bg);max-width:var(--measure)}
+.flow-num{flex:none;width:2.2em;height:2.2em;border-radius:50%;display:grid;place-items:center;font-weight:700;background:var(--read-accent);color:var(--read-on-accent)}
+.flow-step strong{display:block}
+.flow-step p{margin:.15em 0 0}
+.flow-arrow{position:absolute;inset-inline-start:1.75em;bottom:-2em;color:var(--read-accent);font-size:1.2em}
+
+/* Translation */
+.tr-controls{font-family:var(--font-ui);font-size:1rem;line-height:1.5;letter-spacing:normal;word-spacing:normal;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:1.4em}
+[data-mode="hc"] .tr-controls{border:2px solid var(--text)}
+.tr-controls .hint{margin-bottom:12px}
+.tr-langs{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:end;margin-bottom:12px}
+@media (max-width:520px){.tr-langs{grid-template-columns:1fr}.tr-langs .btn-icon{justify-self:center;transform:rotate(90deg)}}
+.tr-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.tr-meta{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 1em;font-family:var(--font-ui);font-size:.88rem;letter-spacing:normal;word-spacing:normal}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;background:var(--read-surface-2);border:1px solid var(--read-border);color:var(--read-text);font-weight:600}
+.pill i{color:var(--read-accent)}
+.tr-text{border-inline-start:4px solid var(--read-accent);padding-inline-start:1em}
+.tr-result-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:1.2em;font-family:var(--font-ui);font-size:1rem;letter-spacing:normal;word-spacing:normal;line-height:1.4}
+
+/* Empty & loading */
+.empty{text-align:center;padding:52px 16px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.empty-icon{width:68px;height:68px;border-radius:20px;display:grid;place-items:center;background:var(--read-accent-soft);color:var(--read-accent);font-size:1.7rem;border:2px solid var(--read-accent)}
+.empty-title{font-weight:700;font-size:1.1em;margin:0}
+.empty-text{margin:0 auto;color:var(--read-muted);max-width:46ch}
+.loader{display:grid;gap:14px}
+.loader-text{display:flex;gap:12px;align-items:center;color:var(--read-muted);font-weight:600;margin:0 0 8px}
+.spin{width:24px;height:24px;border:3px solid var(--read-border);border-top-color:var(--read-accent);border-radius:50%;animation:spin 1s linear infinite;flex:none}
+.sk{height:1.05em;border-radius:8px;background:linear-gradient(90deg,var(--read-surface-2) 25%,var(--read-accent-soft) 50%,var(--read-surface-2) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+
+/* ---------- TTS ---------- */
+.player{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.player .btn{flex:1 1 auto}
+.tts-status{font-size:.9rem;color:var(--muted);display:flex;align-items:center;gap:8px;margin:12px 0 0}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--muted);flex:none}
+.tts-status[data-state="playing"] .dot{background:var(--success)}
+.tts-status[data-state="paused"] .dot{background:var(--accent)}
+
+/* ---------- Chat ---------- */
+.chat-log{display:flex;flex-direction:column;gap:12px;height:360px;overflow-y:auto;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2)}
+[data-mode="hc"] .chat-log{border:2px solid var(--text)}
+.msg{display:flex;gap:10px;max-width:94%;align-items:flex-start}
+.msg-user{align-self:flex-end;flex-direction:row-reverse}
+.msg-avatar{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-size:.9rem;border:1px solid var(--border-strong)}
+.msg-user .msg-avatar{background:var(--surface);color:var(--text)}
+.msg-content{display:flex;flex-direction:column;gap:4px;min-width:0}
+.msg-body{padding:10px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--border);line-height:1.6;overflow-wrap:anywhere}
+.msg-user .msg-body{background:var(--accent-fill);color:var(--on-accent);border-color:var(--accent-fill);border-start-end-radius:4px}
+.msg-ai .msg-body{border-start-start-radius:4px}
+[data-mode="hc"] .msg-body{border:2px solid var(--text)}
+[data-mode="hc"] .msg-ai .msg-body{border-style:dashed}
+.msg-body p{margin:0 0 .5em}.msg-body p:last-child{margin:0}
+.msg-body ul,.msg-body ol{margin:.2em 0 .5em;padding-inline-start:1.25em}
+.msg-body.error{border-color:var(--danger);border-width:2px}
+.msg-tools button{min-height:32px;padding:0 8px;font-size:.82rem}
+.typing{display:inline-flex;gap:5px;align-items:center;height:1.2em}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:blink 1.2s infinite}
+.typing i:nth-child(2){animation-delay:.2s}.typing i:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.chip{min-height:38px;padding:0 13px;border-radius:999px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);font-size:.88rem;cursor:pointer}
+.chip:hover{background:var(--accent-soft);border-color:var(--accent)}
+.chat-form{display:flex;gap:8px}
+.chat-form input{flex:1}
+
+/* ---------- Details (video) ---------- */
+details.card>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;border-radius:10px}
+details.card>summary::-webkit-details-marker{display:none}
+details.card>summary h2{font-size:1.15rem;display:flex;align-items:center;gap:10px}
+.chev{transition:transform .2s;color:var(--muted)}
+details[open] .chev{transform:rotate(180deg)}
+.details-body{margin-top:14px}
+
+/* ---------- Dialog ---------- */
+dialog{border:0;padding:0;border-radius:18px;width:min(780px,calc(100vw - 24px));max-height:min(92vh,940px);background:var(--surface);color:var(--text);box-shadow:0 24px 70px rgba(0,0,0,.4)}
+[data-mode="hc"] dialog{border:3px solid var(--text)}
+dialog::backdrop{background:rgba(8,10,14,.6)}
+.dlg{display:flex;flex-direction:column;max-height:min(92vh,940px)}
+.dlg-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid var(--border)}
+.dlg-head h2{font-size:1.2rem;display:flex;align-items:center;gap:10px}
+.dlg-body{overflow-y:auto;padding:4px 22px 22px}
+.dlg-foot{display:flex;justify-content:space-between;gap:10px;padding:14px 22px;border-top:1px solid var(--border);flex-wrap:wrap}
+[data-mode="hc"] .dlg-head,[data-mode="hc"] .dlg-foot{border-color:var(--text)}
+.set-sec{padding:20px 0;border-bottom:1px solid var(--border)}
+.set-sec:last-child{border-bottom:0}
+.set-sec h3{font-size:1.02rem;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.set-sec h3 i{color:var(--accent)}
+.set-sec>.hint{margin-bottom:12px}
+.option-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.opt{position:relative;display:block}
+.opt input{position:absolute;opacity:0;width:1px;height:1px}
+.opt-card{display:flex;align-items:center;gap:10px;min-height:54px;padding:8px 12px;border:2px solid var(--border-strong);border-radius:12px;cursor:pointer;background:var(--surface);font-weight:600;font-size:.92rem;height:100%}
+.opt-card:hover{border-color:var(--accent)}
+.opt input:checked+.opt-card{border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent);background:var(--accent-soft)}
+.opt input:checked+.opt-card::after{content:"\f00c";font-family:"Font Awesome 6 Free";font-weight:900;margin-inline-start:auto;color:var(--accent)}
+.opt input:focus-visible+.opt-card{outline:3px solid var(--focus);outline-offset:2px}
+.swatch{width:30px;height:30px;border-radius:8px;border:2px solid var(--border-strong);flex:none;display:grid;place-items:center;font-size:.78rem;font-weight:700}
+.preset-btn{display:flex;align-items:center;gap:10px;min-height:52px;padding:8px 12px;border:2px solid var(--border-strong);border-radius:12px;background:var(--surface);cursor:pointer;font-weight:600;font-size:.9rem;text-align:start}
+.preset-btn:hover{border-color:var(--accent)}
+.color-row{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;margin:12px 0}
+.color-row label{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:.92rem}
+.sample{padding:16px 18px;border-radius:12px;border:2px solid var(--border-strong);font-family:var(--font-read);font-size:1.1rem;line-height:1.6}
+.sample p{margin:0}
+.meter-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px}
+.ratio{font-size:1.4rem;font-weight:700;font-variant-numeric:tabular-nums}
+.badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:.8rem;font-weight:700;border:2px solid currentColor;white-space:nowrap}
+.badge.pass{color:var(--success)}
+.badge.fail{color:var(--danger)}
+.note{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;background:var(--surface-2);font-size:.9rem;margin:10px 0 0}
+.note i{color:var(--accent);margin-top:3px}
+.note.bad i{color:var(--danger)}
+.ext-link{display:inline-flex;align-items:center;gap:6px;color:var(--accent);font-weight:600;margin:0 0 12px}
+.audit{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.audit li{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:8px 12px;border-radius:10px;background:var(--surface-2)}
+.audit .pair{display:inline-grid;place-items:center;width:46px;height:32px;border-radius:7px;font-weight:700;font-size:.9rem;border:1px solid var(--border-strong)}
+.audit .meta small{display:block;color:var(--muted);font-variant-numeric:tabular-nums}
+.std-links{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:12px;font-size:.9rem}
+.std-links a{color:var(--accent);font-weight:600}
+
+/* ---------- Toasts ---------- */
+.toasts{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:grid;gap:10px;z-index:300;width:min(560px,calc(100vw - 24px))}
+.toast{display:flex;align-items:center;gap:12px;padding:12px 12px 12px 16px;border-radius:12px;background:var(--text);color:var(--surface);box-shadow:0 10px 30px rgba(0,0,0,.3);font-weight:500}
+.toast span{flex:1}
+.toast-error{border-inline-start:7px solid var(--danger)}
+.toast button{background:transparent;border:0;color:inherit;min-width:40px;min-height:40px;cursor:pointer;border-radius:8px;font-weight:700}
+.toast .toast-action{border:2px solid currentColor;padding:0 12px}
+.toast :focus-visible{outline-color:currentColor}
+
+#ruler{position:fixed;left:0;right:0;pointer-events:none;background:color-mix(in srgb,var(--read-accent) 14%,transparent);border-top:2px solid var(--read-accent);border-bottom:2px solid var(--read-accent);z-index:25;display:none}
+
+/* ---------- Print: a clean handout with every view ---------- */
+@media print{
+  .app-header,.col-side,.tabs,.reader-tools,#input-card,.skip-link,#ruler,.toasts,.tr-controls,.tr-result-actions{display:none!important}
+  body{background:#fff;color:#000}
+  .layout{display:block;padding:0}
+  .card{border:0;box-shadow:none;padding:0}
+  .reading{border:0;padding:0;min-height:0}
+  .tabpanel[hidden]{display:block!important}
+  .tabpanel{margin-bottom:24px}
+  .app-footer{border-top:1px solid #000}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main" data-i18n="skip"></a>
+
+<header class="app-header">
+  <div class="header-inner">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"><i class="fa-solid fa-universal-access"></i></span>
+      <div>
+        <h1 translate="no">Universal Access Reader</h1>
+        <p class="brand-sub" data-i18n="appSub"></p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="lang-pick">
+        <i class="fa-solid fa-globe" aria-hidden="true"></i>
+        <label for="lang-select" data-i18n="myLang"></label>
+        <select id="lang-select" class="lang-select"></select>
+      </div>
+      <div class="segmented" role="group" data-i18n-attr="aria-label:modeGroup">
+        <button type="button" class="seg-btn" data-mode-btn="light" aria-pressed="true"><i class="fa-solid fa-sun" aria-hidden="true"></i><span data-i18n="light"></span></button>
+        <button type="button" class="seg-btn" data-mode-btn="dark" aria-pressed="false"><i class="fa-solid fa-moon" aria-hidden="true"></i><span data-i18n="dark"></span></button>
+        <button type="button" class="seg-btn" data-mode-btn="hc" aria-pressed="false"><i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i><span data-i18n="hc"></span></button>
+      </div>
+      <button type="button" class="btn btn-secondary" data-open-settings aria-haspopup="dialog"><i class="fa-solid fa-sliders" aria-hidden="true"></i><span data-i18n="openSettings"></span></button>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="layout" tabindex="-1">
+  <div class="col-main">
+
+    <!-- Step 1: Input -->
+    <section class="card" id="input-card" aria-labelledby="input-h">
+      <div class="card-head">
+        <h2 id="input-h"><span class="step" aria-hidden="true">1</span> <span data-i18n="step1"></span></h2>
+        <div class="head-actions">
+          <button type="button" class="btn btn-ghost btn-sm" id="sample-btn"><i class="fa-solid fa-flask" aria-hidden="true"></i><span data-i18n="sample"></span></button>
+          <button type="button" class="btn btn-ghost btn-sm" id="clear-btn"><i class="fa-solid fa-eraser" aria-hidden="true"></i><span data-i18n="clear"></span></button>
+        </div>
+      </div>
+      <label for="source-text" class="label" data-i18n="srcLabel"></label>
+      <p class="hint" id="source-hint" data-i18n="srcHint"></p>
+      <textarea id="source-text" class="reading-input" rows="7" dir="auto" aria-describedby="source-hint char-count" data-i18n-attr="placeholder:srcPh"></textarea>
+      <div class="row-between">
+        <span id="char-count" class="hint" style="margin:0"></span>
+        <div class="convert-group">
+          <label for="out-mode" class="label" data-i18n="outLang"></label>
+          <select id="out-mode"></select>
+          <button type="button" class="btn btn-primary btn-lg" id="format-btn"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i><span id="format-label" data-i18n="convert"></span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 2: Reader -->
+    <section class="card" id="reader-card" aria-labelledby="reader-h">
+      <div class="card-head">
+        <h2 id="reader-h"><span class="step" aria-hidden="true">2</span> <span data-i18n="step2"></span></h2>
+        <div class="reader-tools">
+          <div class="size-ctl" role="group" data-i18n-attr="aria-label:sizeGroup">
+            <button type="button" id="size-down" data-i18n-attr="aria-label:smaller"><i class="fa-solid fa-minus" aria-hidden="true"></i> A</button>
+            <output id="size-quick" aria-live="polite">100%</output>
+            <button type="button" id="size-up" data-i18n-attr="aria-label:larger"><i class="fa-solid fa-plus" aria-hidden="true"></i> A</button>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" data-open-settings aria-haspopup="dialog"><i class="fa-solid fa-font" aria-hidden="true"></i><span data-i18n="settings"></span></button>
+          <button type="button" class="btn btn-secondary btn-sm" id="print-btn"><i class="fa-solid fa-print" aria-hidden="true"></i><span data-i18n="print"></span></button>
+        </div>
+      </div>
+
+      <div class="tabs" role="tablist" data-i18n-attr="aria-label:tabsLabel">
+        <button type="button" role="tab" class="tab" id="tab-summary" aria-controls="panel-summary" aria-selected="true"><i class="fa-solid fa-list-check" aria-hidden="true"></i><span data-i18n="tabSummary"></span></button>
+        <button type="button" role="tab" class="tab" id="tab-tables" aria-controls="panel-tables" aria-selected="false" tabindex="-1"><i class="fa-solid fa-table" aria-hidden="true"></i><span data-i18n="tabTables"></span> <span class="count" id="count-tables"></span></button>
+        <button type="button" role="tab" class="tab" id="tab-diagram" aria-controls="panel-diagram" aria-selected="false" tabindex="-1"><i class="fa-solid fa-diagram-project" aria-hidden="true"></i><span data-i18n="tabDiagram"></span></button>
+        <button type="button" role="tab" class="tab" id="tab-translate" aria-controls="panel-translate" aria-selected="false" tabindex="-1"><i class="fa-solid fa-language" aria-hidden="true"></i><span data-i18n="tabTranslate"></span></button>
+        <button type="button" role="tab" class="tab" id="tab-source" aria-controls="panel-source" aria-selected="false" tabindex="-1"><i class="fa-solid fa-file-lines" aria-hidden="true"></i><span data-i18n="tabSource"></span></button>
+      </div>
+
+      <div id="reading-area" class="reading" aria-busy="false">
+        <div id="panel-summary" class="tabpanel" role="tabpanel" aria-labelledby="tab-summary" tabindex="0"></div>
+        <div id="panel-tables" class="tabpanel" role="tabpanel" aria-labelledby="tab-tables" tabindex="0" hidden></div>
+        <div id="panel-diagram" class="tabpanel" role="tabpanel" aria-labelledby="tab-diagram" tabindex="0" hidden></div>
+        <div id="panel-translate" class="tabpanel" role="tabpanel" aria-labelledby="tab-translate" tabindex="0" hidden>
+          <div class="tr-controls">
+            <p class="hint" data-i18n="trDesc"></p>
+            <div class="tr-langs">
+              <div><label for="tr-from" class="label" data-i18n="trFrom"></label><select id="tr-from"></select></div>
+              <button type="button" class="btn btn-secondary btn-icon" id="tr-swap" data-i18n-attr="aria-label:trSwap;title:trSwap"><i class="fa-solid fa-right-left" aria-hidden="true"></i></button>
+              <div><label for="tr-to" class="label" data-i18n="trTo"></label><select id="tr-to"></select></div>
+            </div>
+            <fieldset>
+              <legend class="label" data-i18n="trWhat"></legend>
+              <div class="radio-row">
+                <label class="choice"><input type="radio" name="tr-src" value="source" checked><span data-i18n="tabSource"></span></label>
+                <label class="choice"><input type="radio" name="tr-src" value="summary"><span data-i18n="ttsSummary"></span></label>
+              </div>
+            </fieldset>
+            <div class="tr-actions">
+              <button type="button" class="btn btn-primary" id="tr-btn"><i class="fa-solid fa-language" aria-hidden="true"></i><span id="tr-btn-label" data-i18n="trBtn"></span></button>
+              <button type="button" class="btn btn-secondary" id="tr-open"><i class="fa-brands fa-google" aria-hidden="true"></i><span data-i18n="trOpen"></span> <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button>
+            </div>
+          </div>
+          <div id="tr-result" aria-live="polite"></div>
+        </div>
+        <div id="panel-source" class="tabpanel" role="tabpanel" aria-labelledby="tab-source" tabindex="0" hidden></div>
+        <div id="loader" class="loader" hidden>
+          <p class="loader-text"><span class="spin" aria-hidden="true"></span><span id="loader-msg" data-i18n="loading"></span></p>
+          <div class="sk" style="width:55%"></div><div class="sk" style="width:92%"></div><div class="sk" style="width:84%"></div>
+          <div class="sk" style="width:88%"></div><div class="sk" style="width:60%"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <aside class="col-side" data-i18n-attr="aria-label:toolsLabel">
+
+    <!-- TTS -->
+    <section class="card" aria-labelledby="tts-h">
+      <div class="card-head"><h2 id="tts-h"><span class="card-icon" aria-hidden="true"><i class="fa-solid fa-volume-high"></i></span> <span data-i18n="ttsTitle"></span></h2></div>
+      <fieldset class="field">
+        <legend class="label" data-i18n="ttsWhat"></legend>
+        <div class="radio-row">
+          <label class="choice"><input type="radio" name="tts-src" value="summary" checked><span data-i18n="ttsSummary"></span></label>
+          <label class="choice"><input type="radio" name="tts-src" value="source"><span data-i18n="tabSource"></span></label>
+          <label class="choice"><input type="radio" name="tts-src" value="translation"><span data-i18n="tabTranslate"></span></label>
+        </div>
+      </fieldset>
+      <div class="two field">
+        <div>
+          <label for="tts-language" class="label" data-i18n="ttsLang"></label>
+          <select id="tts-language"></select>
+        </div>
+        <div>
+          <label for="tts-voice" class="label" data-i18n="ttsVoice"></label>
+          <select id="tts-voice"></select>
+        </div>
+      </div>
+      <div class="range-row">
+        <label for="tts-rate" class="label" style="margin:0" data-i18n="ttsRate"></label>
+        <output id="tts-rate-out" for="tts-rate">0.9×</output>
+        <input type="range" id="tts-rate" min="0.6" max="1.4" step="0.05" value="0.9">
+      </div>
+      <div class="player" role="group" data-i18n-attr="aria-label:ttsGroup">
+        <button type="button" class="btn btn-primary" id="tts-play"><i class="fa-solid fa-play" aria-hidden="true"></i><span id="tts-play-label"></span></button>
+        <button type="button" class="btn btn-secondary" id="tts-pause" disabled><i class="fa-solid fa-pause" aria-hidden="true"></i><span data-i18n="pause"></span></button>
+        <button type="button" class="btn btn-secondary" id="tts-stop" disabled><i class="fa-solid fa-stop" aria-hidden="true"></i><span data-i18n="stop"></span></button>
+      </div>
+      <p class="tts-status" id="tts-status" data-state="idle" aria-live="polite"><span class="dot" aria-hidden="true"></span><span id="tts-status-text"></span></p>
+    </section>
+
+    <!-- Tutor -->
+    <section class="card" aria-labelledby="chat-h">
+      <div class="card-head"><h2 id="chat-h"><span class="card-icon" aria-hidden="true"><i class="fa-solid fa-comments"></i></span> <span data-i18n="chatTitle"></span></h2></div>
+      <p class="card-desc" data-i18n="chatDesc"></p>
+      <div id="chat-log" class="chat-log" role="log" aria-live="polite" data-i18n-attr="aria-label:chatLog"></div>
+      <div class="chips" role="group" data-i18n-attr="aria-label:chips">
+        <button type="button" class="chip" data-q="c1q" data-i18n="c1"></button>
+        <button type="button" class="chip" data-q="c2q" data-i18n="c2"></button>
+        <button type="button" class="chip" data-q="c3q" data-i18n="c3"></button>
+        <button type="button" class="chip" data-q="c4q" data-i18n="c4"></button>
+      </div>
+      <form id="chat-form" class="chat-form" novalidate>
+        <label for="chat-input" class="sr-only" data-i18n="chatInput"></label>
+        <input type="text" id="chat-input" dir="auto" autocomplete="off" data-i18n-attr="placeholder:chatPh">
+        <button type="submit" class="btn btn-primary btn-icon" data-i18n-attr="aria-label:send"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i></button>
+      </form>
+    </section>
+
+    <!-- Video -->
+    <details class="card" id="video-card">
+      <summary>
+        <h2><span class="card-icon" aria-hidden="true"><i class="fa-solid fa-clapperboard"></i></span> <span data-i18n="videoTitle"></span></h2>
+        <i class="fa-solid fa-chevron-down chev" aria-hidden="true"></i>
+      </summary>
+      <div class="details-body">
+        <p class="card-desc" style="margin-top:0" data-i18n="videoDesc"></p>
+        <div id="video-init">
+          <label for="video-tool" class="label" data-i18n="videoTool"></label>
+          <select id="video-tool" class="field"></select>
+          <button type="button" class="btn btn-primary btn-block" id="video-btn"><i class="fa-solid fa-film" aria-hidden="true"></i><span id="video-btn-label" data-i18n="videoGen"></span></button>
+        </div>
+        <div id="video-result" hidden>
+          <label for="video-text" class="label" data-i18n="videoScript"></label>
+          <textarea id="video-text" rows="10" dir="auto" readonly></textarea>
+          <div class="row-between">
+            <button type="button" class="btn btn-ghost btn-sm" id="video-new"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span data-i18n="videoNew"></span></button>
+            <button type="button" class="btn btn-secondary btn-sm" id="video-copy"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-i18n="copy"></span></button>
+          </div>
+        </div>
+      </div>
+    </details>
+  </aside>
+</main>
+
+<footer class="app-footer">
+  <div class="footer-inner">
+    <p class="creator"><i class="fa-solid fa-feather-pointed" aria-hidden="true"></i><span><span data-i18n="createdBy"></span> <strong translate="no">Maria I. Tranou</strong></span></p>
+    <p class="footer-meta" translate="no">Universal Access Reader © 2026 · UDL · COGA · WCAG 2.2</p>
+  </div>
+</footer>
+
+<!-- ================= Settings dialog ================= -->
+<dialog id="settings" aria-labelledby="settings-title">
+  <form method="dialog" class="dlg">
+    <div class="dlg-head">
+      <h2 id="settings-title"><i class="fa-solid fa-sliders" aria-hidden="true"></i> <span data-i18n="openSettings"></span></h2>
+      <button type="submit" class="btn btn-ghost btn-sm btn-icon" data-i18n-attr="aria-label:closeSet"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+    </div>
+    <div class="dlg-body">
+
+      <section class="set-sec" aria-labelledby="s-lang">
+        <h3 id="s-lang"><i class="fa-solid fa-globe" aria-hidden="true"></i> <span data-i18n="secLang"></span></h3>
+        <p class="hint" data-i18n="secLangHint"></p>
+        <label for="lang-select-2" class="label" data-i18n="myLang"></label>
+        <select id="lang-select-2" class="lang-select"></select>
+        <p class="note" id="ui-fallback" hidden></p>
+      </section>
+
+      <section class="set-sec" aria-labelledby="s-mode">
+        <h3 id="s-mode"><i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i> <span data-i18n="secMode"></span></h3>
+        <p class="hint" data-i18n="secModeHint"></p>
+        <fieldset>
+          <legend class="sr-only" data-i18n="modeGroup"></legend>
+          <div class="option-grid">
+            <label class="opt"><input type="radio" name="mode" value="light"><span class="opt-card"><i class="fa-solid fa-sun" aria-hidden="true"></i><span data-i18n="light"></span></span></label>
+            <label class="opt"><input type="radio" name="mode" value="dark"><span class="opt-card"><i class="fa-solid fa-moon" aria-hidden="true"></i><span data-i18n="dark"></span></span></label>
+            <label class="opt"><input type="radio" name="mode" value="hc"><span class="opt-card"><i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i><span data-i18n="hc"></span></span></label>
+            <label class="opt"><input type="radio" name="mode" value="system"><span class="opt-card"><i class="fa-solid fa-display" aria-hidden="true"></i><span data-i18n="system"></span></span></label>
+          </div>
+        </fieldset>
+      </section>
+
+      <section class="set-sec" aria-labelledby="s-tint">
+        <h3 id="s-tint"><i class="fa-solid fa-palette" aria-hidden="true"></i> <span data-i18n="secTint"></span></h3>
+        <p class="hint" data-i18n="secTintHint"></p>
+        <fieldset id="tint-group"><legend class="sr-only" data-i18n="secTint"></legend><div class="option-grid" id="tint-options"></div></fieldset>
+      </section>
+
+      <section class="set-sec" aria-labelledby="s-accent">
+        <h3 id="s-accent"><i class="fa-solid fa-droplet" aria-hidden="true"></i> <span data-i18n="secAccent"></span></h3>
+        <p class="hint" data-i18n="secAccentHint"></p>
+        <fieldset id="accent-group">
+          <legend class="sr-only" data-i18n="secAccent"></legend>
+          <div class="option-grid" id="accent-options"></div>
+          <div class="color-row">
+            <label for="accent-custom"><span data-i18n="customColour"></span><input type="color" id="accent-custom" value="#2563eb"></label>
+          </div>
+          <div class="note" id="accent-note" hidden></div>
+        </fieldset>
+        <p class="hint" id="accent-hc-note" data-i18n="accentHc" hidden></p>
+      </section>
+
+      <section class="set-sec" aria-labelledby="s-read">
+        <h3 id="s-read"><i class="fa-solid fa-book-open-reader" aria-hidden="true"></i> <span data-i18n="secRead"></span></h3>
+        <p class="hint" data-i18n="secReadHint"></p>
+        <label class="check"><input type="checkbox" id="read-custom"><span data-i18n="readCustom"></span></label>
+        <fieldset id="read-fields">
+          <legend class="sr-only" data-i18n="readCustom"></legend>
+          <div class="option-grid" id="read-presets" role="group" data-i18n-attr="aria-label:readPresets"></div>
+          <div class="color-row">
+            <label for="read-text-color"><span data-i18n="readText"></span><input type="color" id="read-text-color"></label>
+            <label for="read-bg-color"><span data-i18n="readBg"></span><input type="color" id="read-bg-color"></label>
+            <button type="button" class="btn btn-secondary btn-sm" id="read-swap"><i class="fa-solid fa-right-left" aria-hidden="true"></i><span data-i18n="swap"></span></button>
+            <button type="button" class="btn btn-secondary btn-sm" id="read-fix"><i class="fa-solid fa-wand-magic" aria-hidden="true"></i><span data-i18n="autofix"></span></button>
+          </div>
+        </fieldset>
+        <div class="sample" id="read-sample"><p><strong data-i18n="sampleStrong"></strong> <span data-i18n="sampleRest"></span></p></div>
+        <div class="meter-row">
+          <span><span data-i18n="contrast"></span> <span class="ratio" id="read-ratio">–</span></span>
+          <span class="badges" id="read-badges"></span>
+        </div>
+      </section>
+
+      <section class="set-sec" aria-labelledby="s-type">
+        <h3 id="s-type"><i class="fa-solid fa-text-height" aria-hidden="true"></i> <span data-i18n="secType"></span></h3>
+        <p class="hint" data-i18n="secTypeHint"></p>
+        <div class="field">
+          <label for="font-select" class="label" data-i18n="font"></label>
+          <select id="font-select"></select>
+        </div>
+        <div class="range-row"><label for="r-size" data-i18n="sizeGroup"></label><output id="o-size" for="r-size"></output><input type="range" id="r-size" min="80" max="200" step="10"></div>
+        <div class="range-row"><label for="r-lh" data-i18n="lh"></label><output id="o-lh" for="r-lh"></output><input type="range" id="r-lh" min="1.4" max="2.4" step="0.1"></div>
+        <div class="range-row"><label for="r-ls" data-i18n="ls"></label><output id="o-ls" for="r-ls"></output><input type="range" id="r-ls" min="0" max="0.12" step="0.01"></div>
+        <div class="range-row"><label for="r-ws" data-i18n="ws"></label><output id="o-ws" for="r-ws"></output><input type="range" id="r-ws" min="0" max="0.16" step="0.02"></div>
+        <div class="range-row"><label for="r-measure" data-i18n="measure"></label><output id="o-measure" for="r-measure"></output><input type="range" id="r-measure" min="45" max="90" step="5"></div>
+      </section>
+
+      <section class="set-sec" aria-labelledby="s-aids">
+        <h3 id="s-aids"><i class="fa-solid fa-hands-holding-circle" aria-hidden="true"></i> <span data-i18n="secAids"></span></h3>
+        <label class="check"><input type="checkbox" id="t-ruler"><span><span data-i18n="ruler"></span><small data-i18n="rulerHint"></small></span></label>
+        <label class="check"><input type="checkbox" id="t-motion"><span><span data-i18n="motion"></span><small data-i18n="motionHint"></small></span></label>
+      </section>
+
+      <section class="set-sec" id="ai-section" aria-labelledby="s-ai">
+        <h3 id="s-ai"><i class="fa-solid fa-key" aria-hidden="true"></i> <span data-i18n="secAi"></span></h3>
+        <p class="hint" id="ai-hint" data-i18n="aiHint"></p>
+        <a class="ext-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener"><span data-i18n="getKey"></span> <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+        <div class="field">
+          <label for="api-key" class="label" data-i18n="apiKey"></label>
+          <div class="inline-row">
+            <input type="password" id="api-key" autocomplete="off" spellcheck="false" placeholder="AIza…" aria-describedby="ai-hint ai-status">
+            <button type="button" class="btn btn-secondary btn-sm" data-reveal="api-key" aria-pressed="false" data-i18n="show"></button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="tr-key" class="label" data-i18n="trKeyL"></label>
+          <p class="hint" id="tr-key-hint" data-i18n="trKeyHint"></p>
+          <div class="inline-row">
+            <input type="password" id="tr-key" autocomplete="off" spellcheck="false" placeholder="AIza…" aria-describedby="tr-key-hint tr-status">
+            <button type="button" class="btn btn-secondary btn-sm" data-reveal="tr-key" aria-pressed="false" data-i18n="show"></button>
+          </div>
+        </div>
+        <div class="row-between">
+          <button type="button" class="btn btn-ghost btn-sm" id="api-key-clear"><i class="fa-solid fa-trash-can" aria-hidden="true"></i><span data-i18n="delKey"></span></button>
+          <button type="button" class="btn btn-primary btn-sm" id="api-test"><i class="fa-solid fa-plug-circle-check" aria-hidden="true"></i><span data-i18n="testKey"></span></button>
+        </div>
+        <p class="note" id="ai-status" role="status" hidden></p>
+        <p class="note" id="tr-status" role="status" hidden></p>
+      </section>
+
+      <section class="set-sec" aria-labelledby="s-audit">
+        <h3 id="s-audit"><i class="fa-solid fa-clipboard-check" aria-hidden="true"></i> <span data-i18n="secAudit"></span></h3>
+        <p class="hint" data-i18n="secAuditHint"></p>
+        <ul class="audit" id="audit"></ul>
+        <div class="std-links">
+          <a href="https://www.w3.org/TR/WCAG22/" target="_blank" rel="noopener">WCAG 2.2</a>
+          <a href="https://www.w3.org/TR/coga-usable/" target="_blank" rel="noopener">W3C COGA</a>
+          <a href="https://udlguidelines.cast.org/" target="_blank" rel="noopener">CAST UDL</a>
+        </div>
+        <p class="hint" style="margin-top:14px"><span data-i18n="createdBy"></span> <strong translate="no">Maria I. Tranou</strong></p>
+      </section>
+    </div>
+    <div class="dlg-foot">
+      <button type="button" class="btn btn-secondary" id="reset-btn"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span data-i18n="reset"></span></button>
+      <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check" aria-hidden="true"></i><span data-i18n="done"></span></button>
+    </div>
+  </form>
+</dialog>
+
+<div id="ruler" aria-hidden="true"></div>
+<div id="toasts" class="toasts"></div>
+<div id="sr-announcer" class="sr-only" aria-live="polite"></div>
+
+<script>
+'use strict';
+/* Universal Access Reader — created by Maria I. Tranou */
+
+/* =========================================================
+   Config
+   ========================================================= */
+const API_KEY = ""; // Injected by Canvas environment
+const MODEL = "gemini-3-flash-preview";
+/* If a model is overloaded (503), out of free quota (429) or retired (404),
+   the app automatically tries the next one and remembers the one that worked. */
+const MODEL_FALLBACKS = ["gemini-flash-latest", "gemini-3.1-flash-lite", "gemini-flash-lite-latest"];
+const MODEL_STORE = "uar-gemini-model";
+const STORE_KEY = "uar-settings-v3";
+const KEY_STORE = "uar-gemini-key";
+const TR_KEY_STORE = "uar-translate-key";
+
+/* =========================================================
+   Languages
+   ========================================================= */
+/* Interface translations exist for these; any other language shows the interface in English,
+   while the AI, translation and reading voice still use the person's own language. */
+const UI_IDX = { en: 0, el: 1, es: 2, it: 3, de: 4, fr: 5 };
+const MY_LANGS = ['el', 'en', 'es', 'it', 'de', 'fr', 'pt', 'nl', 'pl', 'ro', 'bg', 'sq', 'tr', 'uk', 'ru', 'ar', 'fa', 'ur', 'hi', 'zh-CN', 'ja'];
+const RTL = new Set(['ar', 'fa', 'ur', 'he', 'ps']);
+const dirOf = code => RTL.has(code) ? 'rtl' : 'ltr';
+
+/* Each row: [English, Ελληνικά, Español, Italiano, Deutsch, Français]. Missing entries fall back to English. */
+const I18N = {
+  skip:['Skip to main content','Μετάβαση στο κύριο περιεχόμενο','Ir al contenido principal','Vai al contenuto principale','Zum Hauptinhalt springen','Aller au contenu principal'],
+  appSub:['Easy reading with AI · designed with UDL, COGA and WCAG 2.2','Απλή ανάγνωση με AI · σχεδιασμένο με UDL, COGA και WCAG 2.2','Lectura fácil con IA · diseñado con UDL, COGA y WCAG 2.2','Lettura facile con l’IA · progettato con UDL, COGA e WCAG 2.2','Leichtes Lesen mit KI · gestaltet nach UDL, COGA und WCAG 2.2','Lecture facile avec l’IA · conçu selon UDL, COGA et WCAG 2.2'],
+  myLang:['My language','Η γλώσσα μου','Mi idioma','La mia lingua','Meine Sprache','Ma langue'],
+  modeGroup:['Display mode','Λειτουργία εμφάνισης','Modo de visualización','Modalità di visualizzazione','Anzeigemodus','Mode d’affichage'],
+  light:['Light','Φωτεινό','Claro','Chiaro','Hell','Clair'],
+  dark:['Dark','Σκοτεινό','Oscuro','Scuro','Dunkel','Sombre'],
+  hc:['High contrast','Υψηλή αντίθεση','Alto contraste','Alto contrasto','Hoher Kontrast','Contraste élevé'],
+  system:['Same as device','Όπως η συσκευή','Como el dispositivo','Come il dispositivo','Wie das Gerät','Comme l’appareil'],
+  openSettings:['Colours & reading','Χρώματα & ανάγνωση','Colores y lectura','Colori e lettura','Farben & Lesen','Couleurs et lecture'],
+  step1:['Add your text','Προσθέστε το κείμενο','Añade tu texto','Aggiungi il tuo testo','Text hinzufügen','Ajoutez votre texte'],
+  sample:['Example','Παράδειγμα','Ejemplo','Esempio','Beispiel','Exemple'],
+  clear:['Clear','Καθαρισμός','Borrar','Cancella','Löschen','Effacer'],
+  srcLabel:['Text to simplify','Κείμενο για απλοποίηση','Texto para simplificar','Testo da semplificare','Text zum Vereinfachen','Texte à simplifier'],
+  srcHint:['Paste text in any language. The AI turns it into key points, tables and a diagram.','Επικολλήστε κείμενο σε οποιαδήποτε γλώσσα. Η AI το μετατρέπει σε βασικά σημεία, πίνακες και διάγραμμα.','Pega un texto en cualquier idioma. La IA lo convierte en puntos clave, tablas y un diagrama.','Incolla un testo in qualsiasi lingua. L’IA lo trasforma in punti chiave, tabelle e un diagramma.','Fügen Sie Text in einer beliebigen Sprache ein. Die KI macht daraus Kernpunkte, Tabellen und ein Diagramm.','Collez un texte dans n’importe quelle langue. L’IA le transforme en points clés, tableaux et schéma.'],
+  srcPh:['Paste your text here…','Επικολλήστε εδώ το κείμενό σας…','Pega aquí tu texto…','Incolla qui il tuo testo…','Fügen Sie hier Ihren Text ein…','Collez votre texte ici…'],
+  outLang:['Results in','Αποτελέσματα σε','Resultados en','Risultati in','Ergebnisse auf','Résultats en'],
+  outMine:['My language ({lang})','Η γλώσσα μου ({lang})','Mi idioma ({lang})','La mia lingua ({lang})','Meine Sprache ({lang})','Ma langue ({lang})'],
+  outSame:['Same language as the text','Ίδια γλώσσα με το κείμενο','El mismo idioma que el texto','La stessa lingua del testo','Gleiche Sprache wie der Text','La même langue que le texte'],
+  convert:['Convert with AI','Μετατροπή με AI','Convertir con IA','Converti con l’IA','Mit KI umwandeln','Convertir avec l’IA'],
+  converting:['Working…','Γίνεται επεξεργασία…','Procesando…','Elaborazione…','Wird bearbeitet…','Traitement…'],
+  words:['{n} words · about {m} min reading','{n} λέξεις · περίπου {m} λεπτ. ανάγνωσης','{n} palabras · unos {m} min de lectura','{n} parole · circa {m} min di lettura','{n} Wörter · etwa {m} Min. Lesezeit','{n} mots · environ {m} min de lecture'],
+  step2:['Read your way','Διαβάστε με τον τρόπο σας','Lee a tu manera','Leggi a modo tuo','Lesen Sie auf Ihre Art','Lisez à votre façon'],
+  sizeGroup:['Text size','Μέγεθος κειμένου','Tamaño del texto','Dimensione del testo','Textgröße','Taille du texte'],
+  smaller:['Smaller text','Μικρότερο κείμενο','Texto más pequeño','Testo più piccolo','Kleinerer Text','Texte plus petit'],
+  larger:['Larger text','Μεγαλύτερο κείμενο','Texto más grande','Testo più grande','Größerer Text','Texte plus grand'],
+  settings:['Settings','Ρυθμίσεις','Ajustes','Impostazioni','Einstellungen','Réglages'],
+  print:['Print','Εκτύπωση','Imprimir','Stampa','Drucken','Imprimer'],
+  tabsLabel:['Content views','Προβολές περιεχομένου','Vistas del contenido','Viste del contenuto','Inhaltsansichten','Vues du contenu'],
+  toolsLabel:['Support tools','Εργαλεία υποστήριξης','Herramientas de apoyo','Strumenti di supporto','Hilfswerkzeuge','Outils d’aide'],
+  tabSummary:['Key points','Βασικά σημεία','Puntos clave','Punti chiave','Kernpunkte','Points clés'],
+  tabTables:['Tables','Πίνακες','Tablas','Tabelle','Tabellen','Tableaux'],
+  tabDiagram:['Diagram','Διάγραμμα','Diagrama','Diagramma','Diagramm','Schéma'],
+  tabTranslate:['Translation','Μετάφραση','Traducción','Traduzione','Übersetzung','Traduction'],
+  tabSource:['Original text','Αρχικό κείμενο','Texto original','Testo originale','Originaltext','Texte original'],
+  loading:['The AI is organising the text into points, tables and a diagram…','Η AI οργανώνει το κείμενο σε σημεία, πίνακες και διάγραμμα…','La IA está organizando el texto en puntos, tablas y un diagrama…','L’IA sta organizzando il testo in punti, tabelle e un diagramma…','Die KI ordnet den Text in Punkte, Tabellen und ein Diagramm…','L’IA organise le texte en points, tableaux et schéma…'],
+  loadingFallback:['The main model is busy; trying {m}…','Το κύριο μοντέλο είναι απασχολημένο· δοκιμάζω το {m}…','El modelo principal está ocupado; probando {m}…','Il modello principale è occupato; provo {m}…','Das Hauptmodell ist ausgelastet; versuche {m}…','Le modèle principal est occupé ; essai de {m}…'],
+  ttsTitle:['Listen','Ακρόαση','Escuchar','Ascolta','Anhören','Écouter'],
+  ttsWhat:['What to read','Τι να διαβαστεί','Qué leer','Cosa leggere','Was vorgelesen wird','Que lire'],
+  ttsSummary:['Simplified summary','Απλοποιημένη περίληψη','Resumen simplificado','Riassunto semplificato','Vereinfachte Zusammenfassung','Résumé simplifié'],
+  ttsLang:['Reading language','Γλώσσα ανάγνωσης','Idioma de lectura','Lingua di lettura','Vorlesesprache','Langue de lecture'],
+  auto:['Automatic','Αυτόματα','Automático','Automatico','Automatisch','Automatique'],
+  ttsVoice:['Voice','Φωνή','Voz','Voce','Stimme','Voix'],
+  defaultVoice:['System default','Προεπιλογή συστήματος','Predeterminada del sistema','Predefinita di sistema','Systemstandard','Voix par défaut'],
+  ttsRate:['Speaking speed','Ταχύτητα ομιλίας','Velocidad de lectura','Velocità di lettura','Sprechtempo','Vitesse de lecture'],
+  play:['Play','Αναπαραγωγή','Reproducir','Riproduci','Abspielen','Lire'],
+  resume:['Resume','Συνέχεια','Continuar','Riprendi','Fortsetzen','Reprendre'],
+  pause:['Pause','Παύση','Pausa','Pausa','Pause','Pause'],
+  stop:['Stop','Διακοπή','Detener','Ferma','Stopp','Arrêter'],
+  ttsGroup:['Playback controls','Έλεγχος ακρόασης','Controles de reproducción','Controlli di riproduzione','Wiedergabesteuerung','Commandes de lecture'],
+  ttsIdle:['Ready','Έτοιμο','Listo','Pronto','Bereit','Prêt'],
+  ttsPlaying:['Reading…','Γίνεται ανάγνωση…','Leyendo…','Lettura in corso…','Wird vorgelesen…','Lecture en cours…'],
+  ttsPaused:['Paused','Σε παύση','En pausa','In pausa','Pausiert','En pause'],
+  ttsUnsupported:['Your browser does not support text-to-speech.','Ο φυλλομετρητής σας δεν υποστηρίζει εκφώνηση κειμένου.','Tu navegador no admite la lectura en voz alta.','Il tuo browser non supporta la sintesi vocale.','Ihr Browser unterstützt keine Sprachausgabe.','Votre navigateur ne prend pas en charge la synthèse vocale.'],
+  ttsEmpty:['There is no text to read.','Δεν υπάρχει κείμενο για ανάγνωση.','No hay texto para leer.','Non c’è testo da leggere.','Es gibt keinen Text zum Vorlesen.','Il n’y a pas de texte à lire.'],
+  chatTitle:['AI study helper','AI βοηθός μελέτης','Asistente de estudio IA','Assistente di studio IA','KI-Lernhilfe','Assistant d’étude IA'],
+  chatDesc:['Ask questions about the text. Answers are short and in plain language.','Κάντε ερωτήσεις για το κείμενο. Οι απαντήσεις είναι σύντομες και με απλά λόγια.','Haz preguntas sobre el texto. Las respuestas son breves y en lenguaje sencillo.','Fai domande sul testo. Le risposte sono brevi e in linguaggio semplice.','Stellen Sie Fragen zum Text. Die Antworten sind kurz und in einfacher Sprache.','Posez des questions sur le texte. Les réponses sont courtes et en langage simple.'],
+  chatLog:['Conversation with the helper','Συνομιλία με τον βοηθό','Conversación con el asistente','Conversazione con l’assistente','Gespräch mit der Lernhilfe','Conversation avec l’assistant'],
+  chips:['Quick questions','Γρήγορες ερωτήσεις','Preguntas rápidas','Domande rapide','Schnelle Fragen','Questions rapides'],
+  c1:['Simpler','Πιο απλά','Más sencillo','Più semplice','Einfacher','Plus simple'],
+  c1q:['Explain the text to me more simply.','Εξήγησέ μου το κείμενο πιο απλά.','Explícame el texto de forma más sencilla.','Spiegami il testo in modo più semplice.','Erkläre mir den Text einfacher.','Explique-moi le texte plus simplement.'],
+  c2:['An example','Ένα παράδειγμα','Un ejemplo','Un esempio','Ein Beispiel','Un exemple'],
+  c2q:['Give me an everyday example.','Δώσε μου ένα παράδειγμα από την καθημερινή ζωή.','Dame un ejemplo de la vida diaria.','Dammi un esempio della vita quotidiana.','Gib mir ein Beispiel aus dem Alltag.','Donne-moi un exemple de la vie quotidienne.'],
+  c3:['3 key ideas','3 βασικές ιδέες','3 ideas clave','3 idee chiave','3 Kernideen','3 idées clés'],
+  c3q:['What are the 3 most important ideas?','Ποιες είναι οι 3 πιο σημαντικές ιδέες;','¿Cuáles son las 3 ideas más importantes?','Quali sono le 3 idee più importanti?','Was sind die 3 wichtigsten Ideen?','Quelles sont les 3 idées les plus importantes ?'],
+  c4:['Check my understanding','Τεστ κατανόησης','Comprueba si entendí','Verifica la comprensione','Verständnis prüfen','Vérifier ma compréhension'],
+  c4q:['Ask me 3 short questions to check if I understood.','Κάνε μου 3 σύντομες ερωτήσεις για να ελέγξω αν κατάλαβα.','Hazme 3 preguntas cortas para comprobar si lo entendí.','Fammi 3 domande brevi per verificare se ho capito.','Stell mir 3 kurze Fragen, um zu prüfen, ob ich es verstanden habe.','Pose-moi 3 questions courtes pour vérifier si j’ai compris.'],
+  chatInput:['Type your question','Γράψτε την ερώτησή σας','Escribe tu pregunta','Scrivi la tua domanda','Schreiben Sie Ihre Frage','Écrivez votre question'],
+  chatPh:['e.g. What does this word mean?','π.χ. Τι σημαίνει αυτή η λέξη;','p. ej., ¿Qué significa esta palabra?','es. Cosa significa questa parola?','z. B. Was bedeutet dieses Wort?','ex. : Que veut dire ce mot ?'],
+  send:['Send question','Αποστολή ερώτησης','Enviar pregunta','Invia domanda','Frage senden','Envoyer la question'],
+  chatWelcome:['Hello! Add a text and ask me anything about it. You can also tap one of the quick questions.','Γεια σας! Προσθέστε ένα κείμενο και ρωτήστε με ό,τι θέλετε γι’ αυτό. Μπορείτε να πατήσετε και μία από τις γρήγορες ερωτήσεις.','¡Hola! Añade un texto y pregúntame lo que quieras sobre él. También puedes pulsar una de las preguntas rápidas.','Ciao! Aggiungi un testo e chiedimi tutto ciò che vuoi. Puoi anche toccare una delle domande rapide.','Hallo! Fügen Sie einen Text hinzu und fragen Sie mich alles dazu. Sie können auch eine der schnellen Fragen antippen.','Bonjour ! Ajoutez un texte et posez-moi toutes vos questions. Vous pouvez aussi choisir une question rapide.'],
+  typing:['The helper is typing…','Ο βοηθός γράφει…','El asistente está escribiendo…','L’assistente sta scrivendo…','Die Lernhilfe schreibt…','L’assistant écrit…'],
+  you:['You: ','Εσείς: ','Tú: ','Tu: ','Sie: ','Vous : '],
+  helper:['Helper: ','Βοηθός: ','Asistente: ','Assistente: ','Lernhilfe: ','Assistant : '],
+  needChatText:['First add a text, so I know what we are talking about.','Προσθέστε πρώτα κείμενο, για να ξέρω τι συζητάμε.','Primero añade un texto para saber de qué hablamos.','Prima aggiungi un testo, così so di cosa parliamo.','Fügen Sie zuerst einen Text hinzu, damit ich weiß, worum es geht.','Ajoutez d’abord un texte pour que je sache de quoi nous parlons.'],
+  videoTitle:['Video script','Σενάριο για βίντεο','Guion de vídeo','Script video','Videoskript','Script vidéo'],
+  videoDesc:['Creates a script and visual directions for AI video tools (e.g. Synthesia, HeyGen).','Δημιουργεί σενάριο και οπτικές οδηγίες για εργαλεία βίντεο AI (π.χ. Synthesia, HeyGen).','Crea un guion e indicaciones visuales para herramientas de vídeo con IA (p. ej., Synthesia, HeyGen).','Crea uno script e indicazioni visive per strumenti video IA (es. Synthesia, HeyGen).','Erstellt ein Skript und Bildanweisungen für KI-Videotools (z. B. Synthesia, HeyGen).','Crée un script et des indications visuelles pour les outils vidéo IA (ex. : Synthesia, HeyGen).'],
+  videoTool:['Video tool','Εργαλείο βίντεο','Herramienta de vídeo','Strumento video','Videotool','Outil vidéo'],
+  vtAvatar:['avatar & script','avatar & σενάριο','avatar y guion','avatar e script','Avatar & Skript','avatar et script'],
+  vtCine:['cinematic scenes','κινηματογραφικές σκηνές','escenas cinematográficas','scene cinematografiche','filmische Szenen','scènes cinématographiques'],
+  vtMotion:['visual motion prompts','οπτικές οδηγίες κίνησης','indicaciones visuales de movimiento','indicazioni visive di movimento','visuelle Bewegungsanweisungen','consignes visuelles de mouvement'],
+  vtStock:['stock video & voice-over','stock βίντεο & αφήγηση','vídeo de archivo y locución','video stock e voce narrante','Stockvideo & Sprecher','vidéo d’archive et voix off'],
+  videoGen:['Create script','Δημιουργία σεναρίου','Crear guion','Crea script','Skript erstellen','Créer le script'],
+  videoBusy:['Creating…','Δημιουργία…','Creando…','Creazione…','Wird erstellt…','Création…'],
+  videoScript:['Script','Σενάριο','Guion','Script','Skript','Script'],
+  videoNew:['New script','Νέο σενάριο','Nuevo guion','Nuovo script','Neues Skript','Nouveau script'],
+  copy:['Copy','Αντιγραφή','Copiar','Copia','Kopieren','Copier'],
+  copied:['Copied.','Αντιγράφηκε.','Copiado.','Copiato.','Kopiert.','Copié.'],
+  copyFail:['Copying was not possible.','Η αντιγραφή δεν ήταν δυνατή.','No se pudo copiar.','Impossibile copiare.','Kopieren war nicht möglich.','La copie a échoué.'],
+  videoNeed:['First add text for the script.','Προσθέστε πρώτα κείμενο για το σενάριο.','Primero añade texto para el guion.','Prima aggiungi il testo per lo script.','Fügen Sie zuerst Text für das Skript hinzu.','Ajoutez d’abord un texte pour le script.'],
+  videoReady:['The script is ready.','Το σενάριο είναι έτοιμο.','El guion está listo.','Lo script è pronto.','Das Skript ist fertig.','Le script est prêt.'],
+  trDesc:['Translate the original text or the summary with Google Translate.','Μεταφράστε το αρχικό κείμενο ή την περίληψη με το Google Translate.','Traduce el texto original o el resumen con Google Translate.','Traduci il testo originale o il riassunto con Google Translate.','Übersetzen Sie den Originaltext oder die Zusammenfassung mit Google Übersetzer.','Traduisez le texte original ou le résumé avec Google Traduction.'],
+  trFrom:['From','Από','De','Da','Von','De'],
+  trTo:['To','Προς','A','A','Nach','Vers'],
+  trDetect:['Detect language','Ανίχνευση γλώσσας','Detectar idioma','Rileva lingua','Sprache erkennen','Détecter la langue'],
+  trSwap:['Swap languages','Αντιστροφή γλωσσών','Intercambiar idiomas','Inverti lingue','Sprachen tauschen','Inverser les langues'],
+  trWhat:['What to translate','Τι να μεταφραστεί','Qué traducir','Cosa tradurre','Was übersetzt wird','Que traduire'],
+  trBtn:['Translate','Μετάφραση','Traducir','Traduci','Übersetzen','Traduire'],
+  trBusy:['Translating…','Γίνεται μετάφραση…','Traduciendo…','Traduzione in corso…','Wird übersetzt…','Traduction…'],
+  trOpen:['Open in Google Translate','Άνοιγμα στο Google Translate','Abrir en Google Translate','Apri in Google Traduttore','In Google Übersetzer öffnen','Ouvrir dans Google Traduction'],
+  trUse:['Use as text to simplify','Χρήση ως κείμενο για απλοποίηση','Usar como texto para simplificar','Usa come testo da semplificare','Als Text zum Vereinfachen verwenden','Utiliser comme texte à simplifier'],
+  trByGoogle:['Translated with Google Translate','Μετάφραση με Google Translate','Traducido con Google Translate','Tradotto con Google Traduttore','Übersetzt mit Google Übersetzer','Traduit avec Google Traduction'],
+  trByGemini:['Translated with Gemini AI (the Google Cloud Translation API is not enabled for this key)','Μετάφραση με Gemini AI (το Google Cloud Translation API δεν είναι ενεργό για αυτό το κλειδί)','Traducido con Gemini IA (la API Google Cloud Translation no está activada para esta clave)','Tradotto con Gemini IA (l’API Google Cloud Translation non è attiva per questa chiave)','Übersetzt mit Gemini KI (die Google Cloud Translation API ist für diesen Schlüssel nicht aktiviert)','Traduit avec Gemini IA (l’API Google Cloud Translation n’est pas activée pour cette clé)'],
+  trDetected:['Detected language: {lang}','Γλώσσα κειμένου: {lang}','Idioma detectado: {lang}','Lingua rilevata: {lang}','Erkannte Sprache: {lang}','Langue détectée : {lang}'],
+  trEmptyT:['The translation will appear here','Η μετάφραση θα εμφανιστεί εδώ','La traducción aparecerá aquí','La traduzione apparirà qui','Die Übersetzung erscheint hier','La traduction apparaîtra ici'],
+  trEmptyX:['Choose the languages and press “Translate”.','Επιλέξτε γλώσσες και πατήστε «Μετάφραση».','Elige los idiomas y pulsa «Traducir».','Scegli le lingue e premi «Traduci».','Wählen Sie die Sprachen und tippen Sie auf „Übersetzen“.','Choisissez les langues et appuyez sur « Traduire ».'],
+  trNeed:['There is no text to translate.','Δεν υπάρχει κείμενο για μετάφραση.','No hay texto para traducir.','Non c’è testo da tradurre.','Es gibt keinen Text zum Übersetzen.','Il n’y a pas de texte à traduire.'],
+  trSame:['The source and target languages are the same.','Η γλώσσα προέλευσης και η γλώσσα στόχος είναι ίδιες.','El idioma de origen y el de destino son iguales.','La lingua di partenza e quella di arrivo sono uguali.','Ausgangs- und Zielsprache sind gleich.','Les langues source et cible sont identiques.'],
+  trUsed:['The translation is now the text to simplify.','Η μετάφραση είναι τώρα το κείμενο για απλοποίηση.','La traducción es ahora el texto para simplificar.','La traduzione è ora il testo da semplificare.','Die Übersetzung ist jetzt der Text zum Vereinfachen.','La traduction est maintenant le texte à simplifier.'],
+  trLong:['Google Translate on the web accepts about 5,000 characters, so only the beginning was sent.','Το Google Translate στον ιστό δέχεται περίπου 5.000 χαρακτήρες, γι’ αυτό στάλθηκε μόνο η αρχή.','Google Translate en la web acepta unos 5.000 caracteres, así que solo se envió el principio.','Google Traduttore sul web accetta circa 5.000 caratteri, quindi è stato inviato solo l’inizio.','Google Übersetzer im Web nimmt etwa 5.000 Zeichen an, daher wurde nur der Anfang gesendet.','Google Traduction sur le web accepte environ 5 000 caractères : seul le début a été envoyé.'],
+  trDone:['The translation is ready.','Η μετάφραση είναι έτοιμη.','La traducción está lista.','La traduzione è pronta.','Die Übersetzung ist fertig.','La traduction est prête.'],
+  closeSet:['Close settings','Κλείσιμο ρυθμίσεων','Cerrar ajustes','Chiudi impostazioni','Einstellungen schließen','Fermer les réglages'],
+  secLang:['Language','Γλώσσα','Idioma','Lingua','Sprache','Langue'],
+  secLangHint:['Choose the language you speak. The instructions, the AI and the reading voice adapt to it.','Επιλέξτε τη γλώσσα που μιλάτε. Οι οδηγίες, η AI και η φωνή ανάγνωσης προσαρμόζονται σε αυτήν.','Elige el idioma que hablas. Las instrucciones, la IA y la voz de lectura se adaptan a él.','Scegli la lingua che parli. Istruzioni, IA e voce di lettura si adattano.','Wählen Sie Ihre Sprache. Anleitungen, KI und Vorlesestimme passen sich an.','Choisissez la langue que vous parlez. Les consignes, l’IA et la voix de lecture s’y adaptent.'],
+  uiFallback:['The interface is not yet translated into {lang}, so it is shown in English. The AI, the translation and the reading voice use {lang}.'],
+  secMode:['Mode','Λειτουργία','Modo','Modalità','Modus','Mode'],
+  secModeHint:['Choose a light or dark background. High contrast helps people with low vision.','Επιλέξτε φωτεινό ή σκοτεινό φόντο. Η υψηλή αντίθεση βοηθά σε χαμηλή όραση.','Elige un fondo claro u oscuro. El alto contraste ayuda a personas con baja visión.','Scegli uno sfondo chiaro o scuro. L’alto contrasto aiuta chi ha ipovisione.','Wählen Sie einen hellen oder dunklen Hintergrund. Hoher Kontrast hilft bei Sehschwäche.','Choisissez un fond clair ou sombre. Le contraste élevé aide les personnes malvoyantes.'],
+  secTint:['Background tint','Απόχρωση φόντου','Tono del fondo','Tonalità dello sfondo','Hintergrundtönung','Teinte du fond'],
+  secTintHint:['Soft tints (cream, light blue) reduce glare and often help people with dyslexia.','Οι απαλές αποχρώσεις (κρεμ, γαλάζιο) μειώνουν τη λάμψη και συχνά βοηθούν άτομα με δυσλεξία.','Los tonos suaves (crema, azul claro) reducen el deslumbramiento y suelen ayudar con la dislexia.','Le tonalità tenui (crema, azzurro) riducono il riverbero e spesso aiutano con la dislessia.','Sanfte Töne (Creme, Hellblau) mindern Blendung und helfen oft bei Legasthenie.','Les teintes douces (crème, bleu clair) réduisent l’éblouissement et aident souvent en cas de dyslexie.'],
+  secAccent:['Accent colour','Χρώμα έμφασης','Color de acento','Colore di accento','Akzentfarbe','Couleur d’accent'],
+  secAccentHint:['Used for buttons, headings and highlights. It is adjusted automatically to reach at least 4.5:1 contrast.','Χρησιμοποιείται σε κουμπιά, τίτλους και επισημάνσεις. Προσαρμόζεται αυτόματα ώστε να έχει αντίθεση τουλάχιστον 4.5:1.','Se usa en botones, títulos y resaltados. Se ajusta automáticamente para lograr un contraste mínimo de 4,5:1.','Usato per pulsanti, titoli ed evidenziazioni. Si regola automaticamente per avere un contrasto di almeno 4,5:1.','Für Schaltflächen, Überschriften und Hervorhebungen. Wird automatisch auf mindestens 4,5:1 Kontrast angepasst.','Utilisée pour les boutons, titres et surlignages. Ajustée automatiquement pour atteindre un contraste d’au moins 4,5:1.'],
+  customColour:['Your own colour','Δικό σας χρώμα','Tu propio color','Il tuo colore','Eigene Farbe','Votre couleur'],
+  accentAdj:['The colour was adjusted automatically to {hex} to reach {r}:1 contrast (WCAG AA).','Το χρώμα προσαρμόστηκε αυτόματα σε {hex} για να πετυχαίνει αντίθεση {r}:1 (WCAG AA).','El color se ajustó automáticamente a {hex} para lograr un contraste de {r}:1 (WCAG AA).','Il colore è stato regolato automaticamente in {hex} per un contrasto di {r}:1 (WCAG AA).','Die Farbe wurde automatisch auf {hex} angepasst, um {r}:1 Kontrast zu erreichen (WCAG AA).','La couleur a été ajustée automatiquement en {hex} pour atteindre un contraste de {r}:1 (WCAG AA).'],
+  accentHc:['In high contrast only two colours are used, for maximum clarity.','Στην υψηλή αντίθεση χρησιμοποιούνται μόνο δύο χρώματα, για μέγιστη καθαρότητα.','En alto contraste solo se usan dos colores, para la máxima claridad.','Nell’alto contrasto si usano solo due colori, per la massima chiarezza.','Bei hohem Kontrast werden nur zwei Farben verwendet, für maximale Klarheit.','En contraste élevé, seules deux couleurs sont utilisées, pour une clarté maximale.'],
+  secRead:['Reading area colours','Χρώματα περιοχής ανάγνωσης','Colores del área de lectura','Colori dell’area di lettura','Farben des Lesebereichs','Couleurs de la zone de lecture'],
+  secReadHint:['Choose your own text and background combination. The contrast is checked instantly.','Διαλέξτε δικό σας συνδυασμό κειμένου και φόντου. Ο έλεγχος αντίθεσης γίνεται αμέσως.','Elige tu propia combinación de texto y fondo. El contraste se comprueba al instante.','Scegli la tua combinazione di testo e sfondo. Il contrasto viene verificato subito.','Wählen Sie Ihre eigene Text- und Hintergrundfarbe. Der Kontrast wird sofort geprüft.','Choisissez votre combinaison de texte et de fond. Le contraste est vérifié aussitôt.'],
+  readCustom:['Use my own reading colours','Χρήση δικών μου χρωμάτων ανάγνωσης','Usar mis propios colores de lectura','Usa i miei colori di lettura','Eigene Lesefarben verwenden','Utiliser mes couleurs de lecture'],
+  readPresets:['Ready-made combinations','Έτοιμοι συνδυασμοί','Combinaciones listas','Combinazioni pronte','Fertige Kombinationen','Combinaisons prêtes'],
+  readText:['Text','Κείμενο','Texto','Testo','Text','Texte'],
+  readBg:['Background','Φόντο','Fondo','Sfondo','Hintergrund','Fond'],
+  swap:['Swap','Αντιστροφή','Invertir','Inverti','Tauschen','Inverser'],
+  autofix:['Automatic fix','Αυτόματη διόρθωση','Corrección automática','Correzione automatica','Automatisch korrigieren','Correction automatique'],
+  sampleStrong:['Sample text.','Δείγμα κειμένου.','Texto de muestra.','Testo di esempio.','Beispieltext.','Texte d’exemple.'],
+  sampleRest:['This is how text will look in the reading area.','Έτσι θα φαίνεται το κείμενο στην περιοχή ανάγνωσης.','Así se verá el texto en el área de lectura.','Così apparirà il testo nell’area di lettura.','So sieht der Text im Lesebereich aus.','Voici l’aspect du texte dans la zone de lecture.'],
+  contrast:['Contrast:','Αντίθεση:','Contraste:','Contrasto:','Kontrast:','Contraste :'],
+  fixed:['The text colour was corrected. Contrast {r} to 1.','Το χρώμα κειμένου διορθώθηκε. Αντίθεση {r} προς 1.','El color del texto se corrigió. Contraste {r} a 1.','Il colore del testo è stato corretto. Contrasto {r} a 1.','Die Textfarbe wurde korrigiert. Kontrast {r} zu 1.','La couleur du texte a été corrigée. Contraste {r} pour 1.'],
+  secType:['Font & spacing','Γραμματοσειρά & αποστάσεις','Fuente y espaciado','Carattere e spaziatura','Schrift & Abstände','Police et espacement'],
+  secTypeHint:['Spacing follows WCAG 1.4.12 (line height up to 2, letters up to 0.12 em, words up to 0.16 em).','Οι αποστάσεις ακολουθούν το WCAG 1.4.12 (διάστιχο έως 2, γράμματα έως 0.12 em, λέξεις έως 0.16 em).','El espaciado sigue WCAG 1.4.12 (interlineado hasta 2, letras hasta 0,12 em, palabras hasta 0,16 em).','La spaziatura segue WCAG 1.4.12 (interlinea fino a 2, lettere fino a 0,12 em, parole fino a 0,16 em).','Die Abstände folgen WCAG 1.4.12 (Zeilenhöhe bis 2, Buchstaben bis 0,12 em, Wörter bis 0,16 em).','L’espacement suit WCAG 1.4.12 (interligne jusqu’à 2, lettres jusqu’à 0,12 em, mots jusqu’à 0,16 em).'],
+  font:['Font','Γραμματοσειρά','Fuente','Carattere','Schrift','Police'],
+  fGreek:['supports Greek','υποστηρίζει Ελληνικά','admite griego','supporta il greco','unterstützt Griechisch','prend en charge le grec'],
+  fLatin:['Latin script only','μόνο λατινικοί χαρακτήρες','solo alfabeto latino','solo alfabeto latino','nur lateinische Schrift','alphabet latin uniquement'],
+  fSerif:['with serifs','με πατούρες','con serifas','con grazie','mit Serifen','avec empattements'],
+  fDys:['dyslexia-friendly','φιλική για δυσλεξία','apta para dislexia','adatta alla dislessia','legasthenie-freundlich','adaptée à la dyslexie'],
+  fInformal:['informal','ανεπίσημη','informal','informale','informell','informelle'],
+  fSystem:['System font','Γραμματοσειρά συστήματος','Fuente del sistema','Carattere di sistema','Systemschrift','Police du système'],
+  lh:['Line spacing','Διάστιχο','Interlineado','Interlinea','Zeilenabstand','Interligne'],
+  ls:['Letter spacing','Απόσταση γραμμάτων','Espacio entre letras','Spaziatura lettere','Buchstabenabstand','Espacement des lettres'],
+  ws:['Word spacing','Απόσταση λέξεων','Espacio entre palabras','Spaziatura parole','Wortabstand','Espacement des mots'],
+  measure:['Line length','Μήκος γραμμής','Longitud de línea','Lunghezza riga','Zeilenlänge','Longueur de ligne'],
+  chars:['ch.','χαρ.','car.','car.','Z.','car.'],
+  secAids:['Focus aids','Βοηθήματα συγκέντρωσης','Ayudas de concentración','Aiuti alla concentrazione','Konzentrationshilfen','Aides à la concentration'],
+  ruler:['Reading ruler','Χάρακας ανάγνωσης','Regla de lectura','Righello di lettura','Leselineal','Règle de lecture'],
+  rulerHint:['A band follows the pointer and highlights the line you are reading.','Μια λωρίδα ακολουθεί τον δείκτη και τονίζει τη γραμμή που διαβάζετε.','Una franja sigue el puntero y resalta la línea que lees.','Una banda segue il puntatore ed evidenzia la riga che leggi.','Ein Streifen folgt dem Zeiger und hebt die Zeile hervor, die Sie lesen.','Une bande suit le pointeur et met en évidence la ligne lue.'],
+  motion:['Less motion','Λιγότερη κίνηση','Menos movimiento','Meno movimento','Weniger Bewegung','Moins d’animations'],
+  motionHint:['Turns off animations and transitions.','Απενεργοποιεί τα εφέ κίνησης και τις μεταβάσεις.','Desactiva animaciones y transiciones.','Disattiva animazioni e transizioni.','Schaltet Animationen und Übergänge aus.','Désactive les animations et transitions.'],
+  secAi:['AI & translation connection','Σύνδεση AI & μετάφρασης','Conexión de IA y traducción','Connessione IA e traduzione','KI- & Übersetzungsverbindung','Connexion IA et traduction'],
+  aiHint:['Inside Gemini Canvas the key is added automatically. If you open the file elsewhere, add your own free key. It is stored only in this browser.','Μέσα στο Gemini Canvas το κλειδί μπαίνει αυτόματα. Αν ανοίγετε το αρχείο αλλού, βάλτε το δικό σας δωρεάν κλειδί. Αποθηκεύεται μόνο σε αυτόν τον browser.','En Gemini Canvas la clave se añade automáticamente. Si abres el archivo en otro lugar, añade tu propia clave gratuita. Solo se guarda en este navegador.','In Gemini Canvas la chiave viene aggiunta automaticamente. Se apri il file altrove, aggiungi la tua chiave gratuita. Viene salvata solo in questo browser.','In Gemini Canvas wird der Schlüssel automatisch eingefügt. Wenn Sie die Datei anderswo öffnen, fügen Sie Ihren eigenen kostenlosen Schlüssel hinzu. Er wird nur in diesem Browser gespeichert.','Dans Gemini Canvas, la clé est ajoutée automatiquement. Si vous ouvrez le fichier ailleurs, ajoutez votre propre clé gratuite. Elle n’est enregistrée que dans ce navigateur.'],
+  getKey:['Get a free key at Google AI Studio','Δωρεάν κλειδί από το Google AI Studio','Obtén una clave gratuita en Google AI Studio','Ottieni una chiave gratuita su Google AI Studio','Kostenlosen Schlüssel bei Google AI Studio holen','Obtenir une clé gratuite sur Google AI Studio'],
+  apiKey:['Gemini API key','Κλειδί Gemini API','Clave de la API de Gemini','Chiave API Gemini','Gemini-API-Schlüssel','Clé API Gemini'],
+  show:['Show','Εμφάνιση','Mostrar','Mostra','Anzeigen','Afficher'],
+  hide:['Hide','Απόκρυψη','Ocultar','Nascondi','Verbergen','Masquer'],
+  delKey:['Delete keys','Διαγραφή κλειδιών','Borrar claves','Elimina chiavi','Schlüssel löschen','Supprimer les clés'],
+  testKey:['Save & test connection','Αποθήκευση & δοκιμή σύνδεσης','Guardar y probar conexión','Salva e prova la connessione','Speichern & Verbindung testen','Enregistrer et tester la connexion'],
+  trKeyL:['Google Cloud Translation key (optional)','Κλειδί Google Cloud Translation (προαιρετικό)','Clave de Google Cloud Translation (opcional)','Chiave Google Cloud Translation (facoltativa)','Google-Cloud-Translation-Schlüssel (optional)','Clé Google Cloud Translation (facultative)'],
+  trKeyHint:['Leave it empty to use the Gemini key. If the Cloud Translation API is not enabled for the key, Gemini translates instead.','Αφήστε το κενό για να χρησιμοποιηθεί το κλειδί Gemini. Αν το Cloud Translation API δεν είναι ενεργό για το κλειδί, τη μετάφραση την κάνει το Gemini.','Déjalo vacío para usar la clave de Gemini. Si la API Cloud Translation no está activada para la clave, Gemini traduce en su lugar.','Lascialo vuoto per usare la chiave Gemini. Se l’API Cloud Translation non è attiva per la chiave, traduce Gemini.','Leer lassen, um den Gemini-Schlüssel zu verwenden. Ist die Cloud Translation API für den Schlüssel nicht aktiviert, übersetzt Gemini.','Laissez vide pour utiliser la clé Gemini. Si l’API Cloud Translation n’est pas activée pour la clé, Gemini traduit à la place.'],
+  keyCanvas:['The key is provided automatically by the environment (Canvas).','Το κλειδί παρέχεται αυτόματα από το περιβάλλον (Canvas).','La clave la proporciona automáticamente el entorno (Canvas).','La chiave è fornita automaticamente dall’ambiente (Canvas).','Der Schlüssel wird automatisch von der Umgebung (Canvas) bereitgestellt.','La clé est fournie automatiquement par l’environnement (Canvas).'],
+  keyDeleted:['The keys were deleted from this browser.','Τα κλειδιά διαγράφηκαν από αυτόν τον browser.','Las claves se borraron de este navegador.','Le chiavi sono state eliminate da questo browser.','Die Schlüssel wurden aus diesem Browser gelöscht.','Les clés ont été supprimées de ce navigateur.'],
+  keyFirst:['Type a key first.','Γράψτε πρώτα ένα κλειδί.','Escribe primero una clave.','Scrivi prima una chiave.','Geben Sie zuerst einen Schlüssel ein.','Saisissez d’abord une clé.'],
+  testing:['Testing connection…','Γίνεται δοκιμή σύνδεσης…','Probando la conexión…','Verifica della connessione…','Verbindung wird getestet…','Test de la connexion…'],
+  testingModel:['Testing model {m}…','Δοκιμή μοντέλου {m}…','Probando el modelo {m}…','Prova del modello {m}…','Teste Modell {m}…','Test du modèle {m}…'],
+  keyOk:['The AI connection works with model {m}. The key was saved.','Η σύνδεση AI λειτουργεί με το μοντέλο {m}. Το κλειδί αποθηκεύτηκε.','La conexión IA funciona con el modelo {m}. La clave se guardó.','La connessione IA funziona con il modello {m}. La chiave è stata salvata.','Die KI-Verbindung funktioniert mit Modell {m}. Der Schlüssel wurde gespeichert.','La connexion IA fonctionne avec le modèle {m}. La clé a été enregistrée.'],
+  trOk:['Google Translate works.','Το Google Translate λειτουργεί.','Google Translate funciona.','Google Traduttore funziona.','Google Übersetzer funktioniert.','Google Traduction fonctionne.'],
+  trNo:['Google Cloud Translation is not enabled for this key, so Gemini will translate. To use Google Translate, enable the “Cloud Translation API” for the key’s project in Google Cloud Console.','Το Google Cloud Translation δεν είναι ενεργό για αυτό το κλειδί, οπότε τη μετάφραση θα την κάνει το Gemini. Για να χρησιμοποιηθεί το Google Translate, ενεργοποιήστε το «Cloud Translation API» στο έργο του κλειδιού, στο Google Cloud Console.','Google Cloud Translation no está activado para esta clave, así que traducirá Gemini. Para usar Google Translate, activa la «Cloud Translation API» en el proyecto de la clave en Google Cloud Console.','Google Cloud Translation non è attivo per questa chiave, quindi tradurrà Gemini. Per usare Google Traduttore, attiva la «Cloud Translation API» nel progetto della chiave in Google Cloud Console.','Google Cloud Translation ist für diesen Schlüssel nicht aktiviert, daher übersetzt Gemini. Um Google Übersetzer zu nutzen, aktivieren Sie die „Cloud Translation API“ im Projekt des Schlüssels in der Google Cloud Console.','Google Cloud Translation n’est pas activé pour cette clé ; Gemini traduira donc. Pour utiliser Google Traduction, activez la « Cloud Translation API » dans le projet de la clé sur Google Cloud Console.'],
+  secAudit:['WCAG contrast check','Έλεγχος αντίθεσης WCAG','Comprobación de contraste WCAG','Verifica del contrasto WCAG','WCAG-Kontrastprüfung','Vérification du contraste WCAG'],
+  secAuditHint:['Live check of the current colours. Text: AA ≥ 4.5:1, AAA ≥ 7:1. Interface parts: ≥ 3:1.','Ζωντανός έλεγχος των τρεχόντων χρωμάτων. Κείμενο: AA ≥ 4.5:1, AAA ≥ 7:1. Στοιχεία διεπαφής: ≥ 3:1.','Comprobación en vivo de los colores actuales. Texto: AA ≥ 4,5:1, AAA ≥ 7:1. Elementos de interfaz: ≥ 3:1.','Verifica in tempo reale dei colori attuali. Testo: AA ≥ 4,5:1, AAA ≥ 7:1. Elementi dell’interfaccia: ≥ 3:1.','Live-Prüfung der aktuellen Farben. Text: AA ≥ 4,5:1, AAA ≥ 7:1. Bedienelemente: ≥ 3:1.','Vérification en direct des couleurs actuelles. Texte : AA ≥ 4,5:1, AAA ≥ 7:1. Éléments d’interface : ≥ 3:1.'],
+  aText:['Main text','Κύριο κείμενο','Texto principal','Testo principale','Haupttext','Texte principal'],
+  aMuted:['Secondary text','Δευτερεύον κείμενο','Texto secundario','Testo secondario','Nebentext','Texte secondaire'],
+  aAccent:['Accent on background','Χρώμα έμφασης σε φόντο','Acento sobre el fondo','Accento sullo sfondo','Akzent auf Hintergrund','Accent sur le fond'],
+  aBtn:['Button text','Κείμενο κουμπιών','Texto de botones','Testo dei pulsanti','Schaltflächentext','Texte des boutons'],
+  aBorder:['Field borders','Περιγράμματα πεδίων','Bordes de campos','Bordi dei campi','Feldränder','Bordures des champs'],
+  aFocus:['Focus indicator','Ένδειξη εστίασης','Indicador de foco','Indicatore di focus','Fokusanzeige','Indicateur de focus'],
+  aRead:['Reading text','Κείμενο ανάγνωσης','Texto de lectura','Testo di lettura','Lesetext','Texte de lecture'],
+  aReadHead:['Reading headings','Τίτλοι ανάγνωσης','Títulos de lectura','Titoli di lettura','Leseüberschriften','Titres de lecture'],
+  not:['Not','Όχι','No','No','Nicht','Pas'],
+  createdBy:['Created by','Δημιουργός:','Creado por','Creato da','Erstellt von','Créé par'],
+  reset:['Reset to defaults','Επαναφορά προεπιλογών','Restablecer valores','Ripristina predefiniti','Auf Standard zurücksetzen','Réinitialiser'],
+  done:['Done','Τέλος','Hecho','Fatto','Fertig','Terminé'],
+  resetDone:['Settings were reset to defaults.','Οι ρυθμίσεις επανήλθαν στις προεπιλογές.','Se restablecieron los ajustes.','Le impostazioni sono state ripristinate.','Die Einstellungen wurden zurückgesetzt.','Les réglages ont été réinitialisés.'],
+  modeAnn:['Mode: {m}','Λειτουργία: {m}','Modo: {m}','Modalità: {m}','Modus: {m}','Mode : {m}'],
+  langAnn:['Language: {l}','Γλώσσα: {l}','Idioma: {l}','Lingua: {l}','Sprache: {l}','Langue : {l}'],
+  tWhite:['White','Λευκό','Blanco','Bianco','Weiß','Blanc'],
+  tCream:['Cream','Κρεμ','Crema','Crema','Creme','Crème'],
+  tBlue:['Light blue','Απαλό γαλάζιο','Azul claro','Azzurro','Hellblau','Bleu clair'],
+  tMint:['Light green','Απαλό πράσινο','Verde claro','Verde chiaro','Hellgrün','Vert clair'],
+  tGray:['Light grey','Απαλό γκρι','Gris claro','Grigio chiaro','Hellgrau','Gris clair'],
+  tNeutral:['Neutral','Ουδέτερο','Neutro','Neutro','Neutral','Neutre'],
+  tWarm:['Warm','Ζεστό','Cálido','Caldo','Warm','Chaud'],
+  tNight:['Night blue','Μπλε νύχτας','Azul noche','Blu notte','Nachtblau','Bleu nuit'],
+  tSoft:['Soft grey','Απαλό σκούρο γκρι','Gris suave','Grigio tenue','Sanftes Grau','Gris doux'],
+  hcY:['Yellow on black','Κίτρινο σε μαύρο','Amarillo sobre negro','Giallo su nero','Gelb auf Schwarz','Jaune sur noir'],
+  hcW:['White on black','Λευκό σε μαύρο','Blanco sobre negro','Bianco su nero','Weiß auf Schwarz','Blanc sur noir'],
+  hcB:['Black on white','Μαύρο σε λευκό','Negro sobre blanco','Nero su bianco','Schwarz auf Weiß','Noir sur blanc'],
+  cBlue:['Blue','Μπλε','Azul','Blu','Blau','Bleu'],
+  cTeal:['Teal','Τιρκουάζ','Turquesa','Turchese','Petrol','Turquoise'],
+  cPurple:['Purple','Μωβ','Morado','Viola','Lila','Violet'],
+  cOrange:['Orange','Πορτοκαλί','Naranja','Arancione','Orange','Orange'],
+  cGreen:['Green','Πράσινο','Verde','Verde','Grün','Vert'],
+  cMagenta:['Magenta','Ματζέντα','Magenta','Magenta','Magenta','Magenta'],
+  p1:['Black on cream','Μαύρο σε κρεμ','Negro sobre crema','Nero su crema','Schwarz auf Creme','Noir sur crème'],
+  p2:['Dark blue on light blue','Σκούρο μπλε σε γαλάζιο','Azul oscuro sobre azul claro','Blu scuro su azzurro','Dunkelblau auf Hellblau','Bleu foncé sur bleu clair'],
+  p3:['Brown on peach','Καφέ σε ροδακινί','Marrón sobre melocotón','Marrone su pesca','Braun auf Pfirsich','Brun sur pêche'],
+  p4:['Dark on light green','Σκούρο σε απαλό πράσινο','Oscuro sobre verde claro','Scuro su verde chiaro','Dunkel auf Hellgrün','Foncé sur vert clair'],
+  p5:['Light grey on charcoal','Ανοιχτό γκρι σε ανθρακί','Gris claro sobre carbón','Grigio chiaro su antracite','Hellgrau auf Anthrazit','Gris clair sur anthracite'],
+  presetAnn:['Combination: {n}','Συνδυασμός: {n}','Combinación: {n}','Combinazione: {n}','Kombination: {n}','Combinaison : {n}'],
+  tldr:['In short','Με λίγα λόγια','En pocas palabras','In breve','Kurz gesagt','En bref'],
+  keyConcepts:['Key concepts','Βασικές έννοιες','Conceptos clave','Concetti chiave','Schlüsselbegriffe','Notions clés'],
+  tableN:['Table {n}','Πίνακας {n}','Tabla {n}','Tabella {n}','Tabelle {n}','Tableau {n}'],
+  glossary:['Glossary','Γλωσσάρι','Glosario','Glossario','Glossar','Glossaire'],
+  glossaryDesc:['Difficult words from the text, in plain language.','Δύσκολες λέξεις του κειμένου, με απλά λόγια.','Palabras difíciles del texto, en lenguaje sencillo.','Parole difficili del testo, in parole semplici.','Schwierige Wörter aus dem Text, einfach erklärt.','Mots difficiles du texte, en langage simple.'],
+  gWord:['Word','Λέξη','Palabra','Parola','Wort','Mot'],
+  gMeaning:['What it means','Τι σημαίνει','Qué significa','Cosa significa','Was es bedeutet','Ce que cela veut dire'],
+  conceptMap:['Concept map','Χάρτης εννοιών','Mapa conceptual','Mappa concettuale','Begriffskarte','Carte des notions'],
+  conceptMapDesc:['The main idea and its parts. Each branch has its own number and colour.','Η κεντρική ιδέα και τα μέρη της. Κάθε κλάδος έχει δικό του αριθμό και χρώμα.','La idea principal y sus partes. Cada rama tiene su número y color.','L’idea principale e le sue parti. Ogni ramo ha il suo numero e colore.','Die Hauptidee und ihre Teile. Jeder Zweig hat eine eigene Nummer und Farbe.','L’idée principale et ses parties. Chaque branche a son numéro et sa couleur.'],
+  centralIdea:['Main idea: ','Κεντρική ιδέα: ','Idea principal: ','Idea principale: ','Hauptidee: ','Idée principale : '],
+  branchesOf:['Branches of “{c}”','Κλάδοι της ιδέας «{c}»','Ramas de «{c}»','Rami di «{c}»','Zweige von „{c}“','Branches de « {c} »'],
+  steps:['Steps in order','Βήματα με σειρά','Pasos en orden','Passaggi in ordine','Schritte der Reihe nach','Étapes dans l’ordre'],
+  stepsDesc:['Follow the steps from top to bottom.','Ακολουθήστε τα βήματα από πάνω προς τα κάτω.','Sigue los pasos de arriba abajo.','Segui i passaggi dall’alto verso il basso.','Folgen Sie den Schritten von oben nach unten.','Suivez les étapes de haut en bas.'],
+  eSumT:['Key points will appear here','Εδώ θα εμφανιστούν τα βασικά σημεία','Aquí aparecerán los puntos clave','Qui appariranno i punti chiave','Hier erscheinen die Kernpunkte','Les points clés apparaîtront ici'],
+  eSumX:['Paste text in step 1 and press “Convert with AI”.','Επικολλήστε κείμενο στο βήμα 1 και πατήστε «Μετατροπή με AI».','Pega un texto en el paso 1 y pulsa «Convertir con IA».','Incolla un testo al passo 1 e premi «Converti con l’IA».','Fügen Sie in Schritt 1 Text ein und tippen Sie auf „Mit KI umwandeln“.','Collez un texte à l’étape 1 et appuyez sur « Convertir avec l’IA ».'],
+  eTabT:['Explanatory tables will appear here','Εδώ θα εμφανιστούν επεξηγηματικοί πίνακες','Aquí aparecerán tablas explicativas','Qui appariranno tabelle esplicative','Hier erscheinen erklärende Tabellen','Des tableaux explicatifs apparaîtront ici'],
+  eTabX:['Comparisons, categories and a glossary of difficult words.','Συγκρίσεις, κατηγορίες και γλωσσάρι με δύσκολες λέξεις.','Comparaciones, categorías y un glosario de palabras difíciles.','Confronti, categorie e un glossario di parole difficili.','Vergleiche, Kategorien und ein Glossar schwieriger Wörter.','Comparaisons, catégories et glossaire des mots difficiles.'],
+  eDiaT:['The diagram will appear here','Εδώ θα εμφανιστεί το διάγραμμα','Aquí aparecerá el diagrama','Qui apparirà il diagramma','Hier erscheint das Diagramm','Le schéma apparaîtra ici'],
+  eDiaX:['A concept map and, if there is a process, steps in order.','Χάρτης εννοιών και, αν υπάρχει διαδικασία, βήματα με σειρά.','Un mapa conceptual y, si hay un proceso, pasos en orden.','Una mappa concettuale e, se c’è un processo, passaggi in ordine.','Eine Begriffskarte und, falls es einen Ablauf gibt, Schritte der Reihe nach.','Une carte des notions et, s’il y a un processus, les étapes dans l’ordre.'],
+  eSrcT:['No text yet','Δεν υπάρχει κείμενο ακόμη','Aún no hay texto','Ancora nessun testo','Noch kein Text','Pas encore de texte'],
+  eSrcX:['Paste text in step 1.','Επικολλήστε κείμενο στο βήμα 1.','Pega un texto en el paso 1.','Incolla un testo al passo 1.','Fügen Sie in Schritt 1 Text ein.','Collez un texte à l’étape 1.'],
+  noTabT:['No tables were produced','Δεν προέκυψαν πίνακες','No se generaron tablas','Nessuna tabella generata','Es wurden keine Tabellen erstellt','Aucun tableau n’a été produit'],
+  noTabX:['The text had nothing to compare or categorise.','Το κείμενο δεν είχε στοιχεία για σύγκριση ή κατηγοριοποίηση.','El texto no tenía nada que comparar o clasificar.','Il testo non conteneva nulla da confrontare o classificare.','Der Text enthielt nichts zum Vergleichen oder Ordnen.','Le texte ne contenait rien à comparer ou classer.'],
+  noDiaT:['No diagram was produced','Δεν προέκυψε διάγραμμα','No se generó un diagrama','Nessun diagramma generato','Es wurde kein Diagramm erstellt','Aucun schéma n’a été produit'],
+  noDiaX:['Try with a longer text.','Δοκιμάστε με μεγαλύτερο κείμενο.','Prueba con un texto más largo.','Prova con un testo più lungo.','Versuchen Sie es mit einem längeren Text.','Essayez avec un texte plus long.'],
+  seeExample:['See an example','Δείτε ένα παράδειγμα','Ver un ejemplo','Vedi un esempio','Beispiel ansehen','Voir un exemple'],
+  needText:['Paste some text first.','Επικολλήστε πρώτα κάποιο κείμενο.','Pega primero un texto.','Incolla prima un testo.','Fügen Sie zuerst einen Text ein.','Collez d’abord un texte.'],
+  working:['The AI is processing the text. Please wait.','Η AI επεξεργάζεται το κείμενο. Περιμένετε λίγο.','La IA está procesando el texto. Espera un momento.','L’IA sta elaborando il testo. Attendi un momento.','Die KI bearbeitet den Text. Bitte warten.','L’IA traite le texte. Veuillez patienter.'],
+  ready:['Done. The text was organised into key points, tables and a diagram.','Έτοιμο. Το κείμενο οργανώθηκε σε βασικά σημεία, πίνακες και διάγραμμα.','Listo. El texto se organizó en puntos clave, tablas y un diagrama.','Fatto. Il testo è stato organizzato in punti chiave, tabelle e un diagramma.','Fertig. Der Text wurde in Kernpunkte, Tabellen und ein Diagramm gegliedert.','Terminé. Le texte a été organisé en points clés, tableaux et schéma.'],
+  sampleLoaded:['An example was loaded (without AI).','Φορτώθηκε ένα παράδειγμα (χωρίς χρήση AI).','Se cargó un ejemplo (sin IA).','È stato caricato un esempio (senza IA).','Ein Beispiel wurde geladen (ohne KI).','Un exemple a été chargé (sans IA).'],
+  cleared:['The text was deleted.','Το κείμενο διαγράφηκε.','Se borró el texto.','Il testo è stato eliminato.','Der Text wurde gelöscht.','Le texte a été supprimé.'],
+  undo:['Undo','Αναίρεση','Deshacer','Annulla','Rückgängig','Annuler'],
+  closeToast:['Close notification','Κλείσιμο ειδοποίησης','Cerrar aviso','Chiudi notifica','Hinweis schließen','Fermer la notification'],
+  eParse:['The AI replied in a format that could not be read. Please try again.','Η AI απάντησε σε μορφή που δεν μπόρεσε να διαβαστεί. Δοκιμάστε ξανά.','La IA respondió en un formato que no se pudo leer. Inténtalo de nuevo.','L’IA ha risposto in un formato illeggibile. Riprova.','Die KI antwortete in einem unlesbaren Format. Bitte erneut versuchen.','L’IA a répondu dans un format illisible. Réessayez.'],
+  eBlocked:['The AI refused to process this text because of its safety filters.','Η AI αρνήθηκε να επεξεργαστεί αυτό το κείμενο λόγω των φίλτρων ασφαλείας της.','La IA se negó a procesar este texto por sus filtros de seguridad.','L’IA ha rifiutato questo testo a causa dei filtri di sicurezza.','Die KI hat diesen Text wegen ihrer Sicherheitsfilter abgelehnt.','L’IA a refusé ce texte à cause de ses filtres de sécurité.'],
+  eEmpty:['The AI returned an empty answer. Try again or use a shorter text.','Η AI επέστρεψε κενή απάντηση. Δοκιμάστε ξανά ή με μικρότερο κείμενο.','La IA devolvió una respuesta vacía. Inténtalo de nuevo o con un texto más corto.','L’IA ha restituito una risposta vuota. Riprova o usa un testo più breve.','Die KI gab eine leere Antwort. Erneut versuchen oder kürzeren Text verwenden.','L’IA a renvoyé une réponse vide. Réessayez ou utilisez un texte plus court.'],
+  eNoKey:['The Gemini API key is missing. It works automatically only inside Gemini Canvas; elsewhere, add your own key in Settings → AI connection.','Λείπει το κλειδί Gemini API. Λειτουργεί αυτόματα μόνο μέσα στο Gemini Canvas· αλλού, προσθέστε το δικό σας κλειδί στις Ρυθμίσεις → Σύνδεση AI.','Falta la clave de la API de Gemini. Solo funciona automáticamente en Gemini Canvas; en otro lugar, añade tu clave en Ajustes → Conexión IA.','Manca la chiave API Gemini. Funziona automaticamente solo in Gemini Canvas; altrove, aggiungi la tua chiave in Impostazioni → Connessione IA.','Der Gemini-API-Schlüssel fehlt. Er funktioniert nur in Gemini Canvas automatisch; fügen Sie sonst Ihren Schlüssel unter Einstellungen → KI-Verbindung hinzu.','La clé API Gemini manque. Elle ne fonctionne automatiquement que dans Gemini Canvas ; ailleurs, ajoutez votre clé dans Réglages → Connexion IA.'],
+  eNetwork:['Could not connect to Google. Check your internet. If the file opens inside a preview, open it directly in your browser.','Δεν έγινε σύνδεση με την Google. Ελέγξτε το διαδίκτυο. Αν το αρχείο ανοίγει μέσα σε προεπισκόπηση, ανοίξτε το απευθείας στον browser σας.','No se pudo conectar con Google. Comprueba internet. Si el archivo se abre en una vista previa, ábrelo directamente en el navegador.','Impossibile connettersi a Google. Controlla internet. Se il file si apre in un’anteprima, aprilo direttamente nel browser.','Keine Verbindung zu Google. Prüfen Sie das Internet. Öffnet sich die Datei in einer Vorschau, öffnen Sie sie direkt im Browser.','Connexion à Google impossible. Vérifiez internet. Si le fichier s’ouvre dans un aperçu, ouvrez-le directement dans le navigateur.'],
+  eBadKey:['The API key is not valid. Check it in Settings → AI connection.','Το κλειδί API δεν είναι έγκυρο. Ελέγξτε το στις Ρυθμίσεις → Σύνδεση AI.','La clave de API no es válida. Revísala en Ajustes → Conexión IA.','La chiave API non è valida. Controllala in Impostazioni → Connessione IA.','Der API-Schlüssel ist ungültig. Prüfen Sie ihn unter Einstellungen → KI-Verbindung.','La clé API n’est pas valide. Vérifiez-la dans Réglages → Connexion IA.'],
+  eRegion:['Gemini is not available for the country or account of this key.','Η υπηρεσία Gemini δεν είναι διαθέσιμη για τη χώρα ή τον λογαριασμό αυτού του κλειδιού.','Gemini no está disponible para el país o la cuenta de esta clave.','Gemini non è disponibile per il paese o l’account di questa chiave.','Gemini ist für das Land oder Konto dieses Schlüssels nicht verfügbar.','Gemini n’est pas disponible pour le pays ou le compte de cette clé.'],
+  eForbidden:['The API key has no access to the Gemini API. Check the key or enable the API in Google AI Studio.','Το κλειδί API δεν έχει πρόσβαση στο Gemini API. Ελέγξτε το κλειδί ή ενεργοποιήστε το API στο Google AI Studio.','La clave no tiene acceso a la API de Gemini. Revisa la clave o activa la API en Google AI Studio.','La chiave non ha accesso all’API Gemini. Controlla la chiave o attiva l’API in Google AI Studio.','Der Schlüssel hat keinen Zugriff auf die Gemini-API. Prüfen Sie ihn oder aktivieren Sie die API in Google AI Studio.','La clé n’a pas accès à l’API Gemini. Vérifiez-la ou activez l’API dans Google AI Studio.'],
+  e404:['None of the Gemini models were found for this key.','Κανένα από τα μοντέλα Gemini δεν βρέθηκε για αυτό το κλειδί.','No se encontró ningún modelo de Gemini para esta clave.','Nessun modello Gemini trovato per questa chiave.','Für diesen Schlüssel wurde kein Gemini-Modell gefunden.','Aucun modèle Gemini trouvé pour cette clé.'],
+  e429:['The free usage limit is used up on all available models. Wait 1–2 minutes (or until tomorrow for the daily limit) and try again.','Το δωρεάν όριο χρήσης εξαντλήθηκε σε όλα τα διαθέσιμα μοντέλα. Περιμένετε 1–2 λεπτά (ή έως αύριο για το ημερήσιο όριο) και δοκιμάστε ξανά.','Se agotó el límite gratuito en todos los modelos. Espera 1–2 minutos (o hasta mañana para el límite diario) y vuelve a intentarlo.','Il limite gratuito è esaurito su tutti i modelli. Attendi 1–2 minuti (o fino a domani per il limite giornaliero) e riprova.','Das kostenlose Limit ist bei allen Modellen aufgebraucht. Warten Sie 1–2 Minuten (oder bis morgen beim Tageslimit) und versuchen Sie es erneut.','La limite gratuite est atteinte sur tous les modèles. Attendez 1 à 2 minutes (ou demain pour la limite quotidienne) et réessayez.'],
+  e5xx:['The Gemini servers are overloaded right now (all models were tried). Try again in a few minutes.','Οι διακομιστές Gemini είναι υπερφορτωμένοι αυτή τη στιγμή (δοκιμάστηκαν όλα τα μοντέλα). Δοκιμάστε ξανά σε λίγα λεπτά.','Los servidores de Gemini están saturados ahora (se probaron todos los modelos). Inténtalo en unos minutos.','I server Gemini sono sovraccarichi (provati tutti i modelli). Riprova tra qualche minuto.','Die Gemini-Server sind gerade überlastet (alle Modelle versucht). Versuchen Sie es in einigen Minuten erneut.','Les serveurs Gemini sont surchargés (tous les modèles ont été essayés). Réessayez dans quelques minutes.'],
+  eOther:['Something went wrong talking to the AI{code}. Please try again.','Κάτι πήγε στραβά στην επικοινωνία με την AI{code}. Δοκιμάστε ξανά.','Algo falló al comunicar con la IA{code}. Inténtalo de nuevo.','Qualcosa è andato storto con l’IA{code}. Riprova.','Bei der Verbindung mit der KI ist etwas schiefgegangen{code}. Bitte erneut versuchen.','Un problème est survenu avec l’IA{code}. Réessayez.'],
+  code:[' (code {n})',' (κωδικός {n})',' (código {n})',' (codice {n})',' (Code {n})',' (code {n})'],
+  googleMsg:[' (Google message: {d})',' (Μήνυμα Google: {d})',' (Mensaje de Google: {d})',' (Messaggio di Google: {d})',' (Google-Meldung: {d})',' (Message de Google : {d})']
+};
+
+/* =========================================================
+   DOM helpers (AI and translated text is always inserted as text, never HTML)
+   ========================================================= */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+function el(tag, attrs = {}, ...children) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v == null || v === false) continue;
+    if (k === 'class') n.className = v;
+    else if (k === 'text') n.textContent = v;
+    else if (k === 'style') n.style.cssText = v;
+    else if (k.startsWith('on') && typeof v === 'function') n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of children.flat()) {
+    if (c == null || c === false) continue;
+    n.append(c instanceof Node ? c : document.createTextNode(String(c)));
+  }
+  return n;
+}
+const icon = name => el('i', { class: 'fa-solid fa-' + name, 'aria-hidden': 'true' });
+
+/* =========================================================
+   Colour maths — WCAG 2.x relative luminance & contrast
+   ========================================================= */
+function hexToRgb(h) {
+  h = String(h).replace('#', '');
+  if (h.length === 3) h = h.split('').map(c => c + c).join('');
+  const n = parseInt(h, 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+function rgbToHex(rgb) {
+  return '#' + rgb.map(v => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('').toUpperCase();
+}
+function lum(hex) {
+  const c = hexToRgb(hex).map(v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+}
+function contrast(a, b) {
+  const A = lum(a), B = lum(b);
+  return (Math.max(A, B) + 0.05) / (Math.min(A, B) + 0.05);
+}
+function mix(a, b, t) {
+  const A = hexToRgb(a), B = hexToRgb(b);
+  return rgbToHex(A.map((v, i) => v + (B[i] - v) * t));
+}
+/** Nudges fg toward black or white until it reaches the target ratio against every bg. */
+function ensureContrast(fg, bgs, target) {
+  bgs = [].concat(bgs);
+  const minC = c => Math.min(...bgs.map(b => contrast(c, b)));
+  if (minC(fg) >= target) return fg.toUpperCase();
+  const avg = bgs.reduce((s, b) => s + lum(b), 0) / bgs.length;
+  const toward = avg > 0.18 ? '#000000' : '#FFFFFF';
+  for (let t = 0.04; t <= 1.0001; t += 0.04) {
+    const c = mix(fg, toward, t);
+    if (minC(c) >= target) return c;
+  }
+  return toward;
+}
+const bestOn = bg => contrast('#FFFFFF', bg) >= contrast('#0B0D10', bg) ? '#FFFFFF' : '#0B0D10';
+
+/* =========================================================
+   Palettes
+   ========================================================= */
+const PALETTES = {
+  light: {
+    text: '#1B1F24', muted: '#4B5563', border: '#D9DEE5', borderStrong: '#6B7280',
+    tints: {
+      white: { name: 'tWhite', bg: '#F3F5F8', surface: '#FFFFFF', surface2: '#F1F4F8' },
+      cream: { name: 'tCream', bg: '#F2EAD6', surface: '#FBF6EA', surface2: '#F4ECDA' },
+      blue:  { name: 'tBlue', bg: '#E3ECF5', surface: '#F2F7FC', surface2: '#E6EFF8' },
+      mint:  { name: 'tMint', bg: '#E3EFE5', surface: '#F2F9F3', surface2: '#E5F1E7' },
+      gray:  { name: 'tGray', bg: '#E6E7E9', surface: '#F6F6F7', surface2: '#EBECEE' }
+    }
+  },
+  dark: {
+    text: '#E8EBF0', muted: '#AEB6C2', border: '#2E3440', borderStrong: '#7D8796',
+    tints: {
+      neutral: { name: 'tNeutral', bg: '#0E1116', surface: '#171B22', surface2: '#1F242D' },
+      warm:    { name: 'tWarm', bg: '#13110E', surface: '#1D1A16', surface2: '#27231D' },
+      blue:    { name: 'tNight', bg: '#0A1020', surface: '#121A2C', surface2: '#1A2439' },
+      soft:    { name: 'tSoft', bg: '#1E2024', surface: '#26292E', surface2: '#2F3238' }
+    }
+  },
+  hc: {
+    tints: {
+      yellow: { name: 'hcY', bg: '#000000', fg: '#FFFF00', focus: '#00FFFF' },
+      white:  { name: 'hcW', bg: '#000000', fg: '#FFFFFF', focus: '#FFFF00' },
+      black:  { name: 'hcB', bg: '#FFFFFF', fg: '#000000', focus: '#0000CC' }
+    }
+  }
+};
+const ACCENTS = [
+  { name: 'cBlue', hex: '#2563EB' }, { name: 'cTeal', hex: '#0D9488' },
+  { name: 'cPurple', hex: '#7C3AED' }, { name: 'cOrange', hex: '#EA580C' },
+  { name: 'cGreen', hex: '#16A34A' }, { name: 'cMagenta', hex: '#C026D3' }
+];
+const READ_PRESETS = [
+  { name: 'p1', text: '#1A1A1A', bg: '#FBF5E6' },
+  { name: 'p2', text: '#0B2545', bg: '#EAF2FB' },
+  { name: 'p3', text: '#3B2A1A', bg: '#FDEFE3' },
+  { name: 'p4', text: '#1E2B22', bg: '#EAF5EC' },
+  { name: 'p5', text: '#E4E4E4', bg: '#1F2023' },
+  { name: 'hcY', text: '#FFFF00', bg: '#000000' }
+];
+const FONTS = [
+  { v: '"Open Sans", sans-serif', name: 'Open Sans', tags: ['fGreek'] },
+  { v: '"Noto Sans", sans-serif', name: 'Noto Sans', tags: ['fGreek'] },
+  { v: '"Noto Serif", serif', name: 'Noto Serif', tags: ['fSerif', 'fGreek'] },
+  { v: 'Lexend, "Noto Sans", sans-serif', name: 'Lexend', tags: ['fDys', 'fLatin'] },
+  { v: '"Comic Sans MS", "Comic Neue", cursive', name: 'Comic Sans', tags: ['fInformal'] },
+  { v: 'system-ui, -apple-system, "Segoe UI", sans-serif', nameKey: 'fSystem', tags: [] }
+];
+const VIDEO_TOOLS = [
+  { v: 'Synthesia', k: 'vtAvatar' }, { v: 'HeyGen', k: 'vtAvatar' }, { v: 'OpenAI Sora', k: 'vtCine' },
+  { v: 'Runway', k: 'vtMotion' }, { v: 'InVideo', k: 'vtStock' }
+];
+/* Okabe–Ito colour-blind-safe palette for diagram branches (always paired with numbers) */
+const CB_PALETTE = ['#0072B2', '#D55E00', '#009E73', '#CC79A7', '#E69F00', '#56B4E9'];
+
+/* =========================================================
+   Settings state (persisted)
+   ========================================================= */
+function defaultLang() {
+  const nav = (navigator.languages || [navigator.language || 'el']).map(l => l.toLowerCase());
+  for (const l of nav) {
+    const exact = MY_LANGS.find(c => c.toLowerCase() === l);
+    if (exact) return exact;
+    const base = MY_LANGS.find(c => c.toLowerCase() === l.split('-')[0]);
+    if (base) return base;
+  }
+  return 'el';
+}
+const DEFAULTS = {
+  lang: null, outMode: 'mine', ttsLang: 'auto', trFrom: 'auto', trTo: null,
+  mode: 'light', tintLight: 'white', tintDark: 'neutral', tintHc: 'yellow',
+  accent: '#2563EB', customRead: false, readText: '#1A1A1A', readBg: '#FBF5E6',
+  font: '"Open Sans", sans-serif', size: 100, lh: 1.7, ls: 0, ws: 0, measure: 70,
+  reduceMotion: false, ruler: false
+};
+function loadSettings() {
+  let s = { ...DEFAULTS };
+  try { const raw = localStorage.getItem(STORE_KEY); if (raw) s = { ...DEFAULTS, ...JSON.parse(raw) }; } catch (e) {}
+  if (!s.lang || !MY_LANGS.includes(s.lang)) s.lang = defaultLang();
+  if (!s.trTo) s.trTo = s.lang;
+  return s;
+}
+function saveSettings() { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) {} }
+let S = loadSettings();
+const mqDark = window.matchMedia('(prefers-color-scheme: dark)');
+const resolvedMode = () => S.mode === 'system' ? (mqDark.matches ? 'dark' : 'light') : S.mode;
+
+/* =========================================================
+   i18n
+   ========================================================= */
+const uiLang = () => (S.lang in UI_IDX ? S.lang : 'en');
+function t(key, vars = {}) {
+  const row = I18N[key];
+  const s = row ? (row[UI_IDX[uiLang()]] || row[0]) : key;
+  return s.replace(/\{(\w+)\}/g, (m, k) => (vars[k] != null ? vars[k] : m));
+}
+const cap = (s, loc) => s ? s.charAt(0).toLocaleUpperCase(loc) + s.slice(1) : s;
+function langName(code, inLang = uiLang()) {
+  try { return cap(new Intl.DisplayNames([inLang], { type: 'language' }).of(code), inLang); } catch (e) { return code; }
+}
+const autonym = code => langName(code, code);
+const englishName = code => langName(code, 'en');
+
+/* Lightweight language detection: script ranges + common-word scoring for Latin-script languages. */
+const STOP = {
+  en: 'the and of to is in that it for with are this be on was',
+  es: 'el la de que y en los las por con una es para del se',
+  it: 'il di che la e è per non un una sono con gli della le',
+  de: 'der die und das ist nicht mit ein eine zu den von sich auf dem',
+  fr: 'le la les de et des est un une que pour dans pas du qui',
+  pt: 'o a os as de que e do da em um uma para com não',
+  nl: 'de het een en van is dat niet op te zijn voor met',
+  pl: 'i w nie na się z to że do jest jak o',
+  ro: 'și de în la cu este nu o un pe care pentru',
+  tr: 've bir bu da de için ile çok ne olarak gibi',
+  sq: 'dhe të në është një për me që nga se'
+};
+const STOP_SETS = Object.fromEntries(Object.entries(STOP).map(([k, v]) => [k, new Set(v.split(' '))]));
+function detectLang(text, fallback) {
+  const s = (text || '').slice(0, 4000);
+  if (!s.trim()) return fallback || S.lang;
+  if (/[Ͱ-Ͽἀ-῿]/.test(s)) return 'el';
+  if (/[؀-ۿ]/.test(s)) { if (/[ٹڈڑںے]/.test(s)) return 'ur'; if (/[پچژگ]/.test(s)) return 'fa'; return 'ar'; }
+  if (/[Ѐ-ӿ]/.test(s)) { if (/[іїєґ]/i.test(s)) return 'uk'; if (/[ыэё]/i.test(s)) return 'ru'; return /ъ/.test(s) ? 'bg' : 'ru'; }
+  if (/[぀-ヿ]/.test(s)) return 'ja';
+  if (/[一-鿿]/.test(s)) return 'zh-CN';
+  if (/[ऀ-ॿ]/.test(s)) return 'hi';
+  const words = s.toLowerCase().match(/[\p{L}']+/gu) || [];
+  let best = null, bestN = 0;
+  for (const [l, set] of Object.entries(STOP_SETS)) {
+    const n = words.reduce((acc, w) => acc + (set.has(w) ? 1 : 0), 0);
+    if (n > bestN) { best = l; bestN = n; }
+  }
+  return best || fallback || 'en';
+}
+
+function fillSelect(sel, items, value) {
+  sel.replaceChildren(...items.map(([v, label, lang]) => el('option', { value: v, lang: lang || null, text: label })));
+  if (items.some(([v]) => v === value)) sel.value = value;
+}
+function buildLanguageControls() {
+  const mine = MY_LANGS.map(c => [c, autonym(c), c]);
+  $$('.lang-select').forEach(sel => fillSelect(sel, mine, S.lang));
+  fillSelect($('#out-mode'), [['mine', t('outMine', { lang: autonym(S.lang) })], ['same', t('outSame')]], S.outMode);
+  const named = MY_LANGS.map(c => [c, langName(c)]);
+  fillSelect($('#tts-language'), [['auto', t('auto')], ...named], S.ttsLang);
+  fillSelect($('#tr-from'), [['auto', t('trDetect')], ...named], S.trFrom);
+  fillSelect($('#tr-to'), named, S.trTo);
+  fillSelect($('#font-select'), FONTS.map(f => [f.v, [f.name || t(f.nameKey), ...f.tags.map(x => t(x))].join(' · ')]), S.font);
+  const vt = $('#video-tool').value;
+  fillSelect($('#video-tool'), VIDEO_TOOLS.map(x => [x.v, `${x.v} (${t(x.k)})`]), vt || 'Synthesia');
+  const fb = $('#ui-fallback');
+  if (uiLang() !== S.lang) { fb.hidden = false; fb.replaceChildren(icon('circle-info'), el('span', { text: t('uiFallback', { lang: autonym(S.lang) }) })); }
+  else fb.hidden = true;
+}
+function applyI18n() {
+  document.documentElement.lang = uiLang();
+  $$('[data-i18n]').forEach(e => { e.textContent = t(e.dataset.i18n); });
+  $$('[data-i18n-attr]').forEach(e => e.dataset.i18nAttr.split(';').forEach(pair => {
+    const [a, k] = pair.split(':').map(x => x.trim());
+    e.setAttribute(a, t(k));
+  }));
+  $$('[data-reveal]').forEach(b => { b.textContent = t(b.getAttribute('aria-pressed') === 'true' ? 'hide' : 'show'); });
+  buildLanguageControls();
+  renderAccentOptions();
+  renderReadPresets();
+  lastTintMode = null;
+  applySettings();
+  if (lastData) renderAll(lastData); else { renderEmptyAll(); renderSource(); }
+  renderTranslation();
+  updateCount();
+  setTts(ttsState);
+  populateVoiceSelect();
+  if (busy) $('#format-label').textContent = t('converting');
+}
+function setLanguage(code) {
+  if (!MY_LANGS.includes(code)) return;
+  S.lang = code;
+  S.trTo = code;
+  if (S.trFrom === code) S.trFrom = 'auto';
+  saveSettings();
+  applyI18n();
+  announce(t('langAnn', { l: autonym(code) }));
+}
+
+/* =========================================================
+   Theme engine
+   ========================================================= */
+let C = {};
+function computeColors() {
+  const mode = resolvedMode();
+  let c;
+  if (mode === 'hc') {
+    const tn = PALETTES.hc.tints[S.tintHc] || PALETTES.hc.tints.yellow;
+    c = { bg: tn.bg, surface: tn.bg, surface2: tn.bg, text: tn.fg, muted: tn.fg, border: tn.fg, borderStrong: tn.fg,
+          accent: tn.fg, accentFill: tn.fg, onAccent: tn.bg, accentSoft: tn.bg, focus: tn.focus, danger: tn.fg, success: tn.fg };
+  } else {
+    const p = PALETTES[mode];
+    const tn = p.tints[mode === 'light' ? S.tintLight : S.tintDark] || Object.values(p.tints)[0];
+    const surfaces = [tn.bg, tn.surface, tn.surface2];
+    const accent = ensureContrast(S.accent, surfaces, 4.5);
+    let fill = accent;
+    const on = bestOn(fill);
+    if (contrast(on, fill) < 4.5) fill = ensureContrast(fill, [on], 4.5);
+    c = { bg: tn.bg, surface: tn.surface, surface2: tn.surface2, text: p.text,
+          muted: ensureContrast(p.muted, surfaces, 4.5), border: p.border,
+          borderStrong: ensureContrast(p.borderStrong, surfaces, 3),
+          accent, accentFill: fill, onAccent: on, focus: accent,
+          accentSoft: mix(tn.surface, accent, mode === 'light' ? 0.10 : 0.18),
+          danger: ensureContrast(mode === 'light' ? '#B91C1C' : '#F87171', surfaces, 4.5),
+          success: ensureContrast(mode === 'light' ? '#15803D' : '#4ADE80', surfaces, 4.5) };
+  }
+  const hcPlain = mode === 'hc' && !S.customRead;
+  c.readText = S.customRead ? S.readText.toUpperCase() : c.text;
+  c.readBg = S.customRead ? S.readBg.toUpperCase() : c.surface;
+  c.readSurface2 = hcPlain ? c.readBg : mix(c.readBg, c.readText, 0.06);
+  c.readMuted = hcPlain ? c.readText : ensureContrast(mix(c.readText, c.readBg, 0.28), [c.readBg, c.readSurface2], 4.5);
+  c.readAccent = hcPlain ? c.readText : ensureContrast(c.accent, [c.readBg, c.readSurface2], 4.5);
+  c.readOnAccent = hcPlain ? c.readBg : bestOn(c.readAccent);
+  if (!hcPlain && contrast(c.readOnAccent, c.readAccent) < 4.5) c.readOnAccent = ensureContrast(c.readOnAccent, [c.readAccent], 4.5);
+  c.readAccentSoft = hcPlain ? c.readBg : mix(c.readBg, c.readAccent, 0.10);
+  c.readBorder = hcPlain ? c.readText : ensureContrast(mix(c.readBg, c.readText, 0.35), [c.readBg], 3);
+  c.branches = CB_PALETTE.map(h => hcPlain ? c.readText : ensureContrast(h, [c.readBg, c.readSurface2], 3));
+  C = c;
+  return c;
+}
+
+let lastTintMode = null;
+function applySettings() {
+  const c = computeColors();
+  const mode = resolvedMode();
+  const root = document.documentElement;
+  root.dataset.mode = mode;
+  root.style.colorScheme = lum(c.bg) < 0.4 ? 'dark' : 'light';
+  const vars = {
+    '--bg': c.bg, '--surface': c.surface, '--surface-2': c.surface2, '--text': c.text, '--muted': c.muted,
+    '--border': c.border, '--border-strong': c.borderStrong, '--accent': c.accent, '--accent-fill': c.accentFill,
+    '--on-accent': c.onAccent, '--accent-soft': c.accentSoft, '--focus': c.focus, '--danger': c.danger, '--success': c.success,
+    '--read-text': c.readText, '--read-bg': c.readBg, '--read-surface-2': c.readSurface2, '--read-muted': c.readMuted,
+    '--read-accent': c.readAccent, '--read-on-accent': c.readOnAccent, '--read-accent-soft': c.readAccentSoft, '--read-border': c.readBorder,
+    '--font-read': S.font, '--fs': S.size / 100, '--lh': S.lh, '--ls': S.ls + 'em', '--ws': S.ws + 'em', '--measure': S.measure + 'ch'
+  };
+  c.branches.forEach((b, i) => { vars['--b' + i] = b; });
+  for (const [k, v] of Object.entries(vars)) root.style.setProperty(k, String(v));
+  root.toggleAttribute('data-reduce-motion', !!S.reduceMotion);
+  const meta = $('meta[name="theme-color"]'); if (meta) meta.content = c.surface;
+  if (lastTintMode !== mode) { renderTintOptions(); lastTintMode = mode; }
+  syncControls();
+  renderAudit();
+  updateReadMeter();
+  if (!S.ruler) $('#ruler').style.display = 'none';
+  saveSettings();
+}
+
+/* =========================================================
+   Settings UI
+   ========================================================= */
+function renderTintOptions() {
+  const mode = resolvedMode();
+  const box = $('#tint-options');
+  box.replaceChildren();
+  const key = mode === 'light' ? 'tintLight' : mode === 'dark' ? 'tintDark' : 'tintHc';
+  for (const [k, tn] of Object.entries(PALETTES[mode].tints)) {
+    const sw = mode === 'hc'
+      ? el('span', { class: 'swatch', style: `background:${tn.bg};color:${tn.fg};border-color:${tn.fg}`, 'aria-hidden': 'true', text: 'Aa' })
+      : el('span', { class: 'swatch', style: `background:${tn.surface};color:${PALETTES[mode].text}`, 'aria-hidden': 'true', text: 'Aa' });
+    const input = el('input', { type: 'radio', name: 'tint', value: k });
+    input.checked = S[key] === k;
+    input.addEventListener('change', () => { S[key] = k; applySettings(); });
+    box.append(el('label', { class: 'opt' }, input, el('span', { class: 'opt-card' }, sw, t(tn.name))));
+  }
+}
+function renderAccentOptions() {
+  const box = $('#accent-options');
+  box.replaceChildren();
+  ACCENTS.forEach(a => {
+    const input = el('input', { type: 'radio', name: 'accent', value: a.hex });
+    input.checked = a.hex.toUpperCase() === S.accent.toUpperCase();
+    input.addEventListener('change', () => { S.accent = a.hex; applySettings(); });
+    box.append(el('label', { class: 'opt' }, input,
+      el('span', { class: 'opt-card' }, el('span', { class: 'swatch', style: `background:${a.hex};border-color:${a.hex}`, 'aria-hidden': 'true' }), t(a.name))));
+  });
+}
+function renderReadPresets() {
+  const box = $('#read-presets');
+  box.replaceChildren();
+  READ_PRESETS.forEach(p => {
+    box.append(el('button', {
+      type: 'button', class: 'preset-btn',
+      onclick: () => { S.customRead = true; S.readText = p.text; S.readBg = p.bg; applySettings(); announce(t('presetAnn', { n: t(p.name) })); }
+    }, el('span', { class: 'swatch', style: `background:${p.bg};color:${p.text}`, 'aria-hidden': 'true', text: 'Aa' }), t(p.name)));
+  });
+}
+function syncControls() {
+  const mode = resolvedMode();
+  $$('[data-mode-btn]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.modeBtn === S.mode)));
+  $$('input[name="mode"]').forEach(i => { i.checked = i.value === S.mode; });
+  const isHc = mode === 'hc';
+  $('#accent-group').disabled = isHc;
+  $('#accent-hc-note').hidden = !isHc;
+  $$('input[name="accent"]').forEach(i => { i.checked = i.value.toUpperCase() === S.accent.toUpperCase(); });
+  $('#accent-custom').value = S.accent.toLowerCase();
+  const note = $('#accent-note');
+  if (!isHc && C.accent.toUpperCase() !== S.accent.toUpperCase()) {
+    note.hidden = false;
+    note.replaceChildren(icon('circle-info'), el('span', { text: t('accentAdj', { hex: C.accent, r: contrast(C.accent, C.surface).toFixed(1) }) }));
+  } else note.hidden = true;
+  $('#read-custom').checked = S.customRead;
+  $('#read-fields').disabled = !S.customRead;
+  $('#read-text-color').value = S.readText.toLowerCase();
+  $('#read-bg-color').value = S.readBg.toLowerCase();
+  $('#font-select').value = S.font;
+  setRange('size', S.size, `${S.size}%`);
+  setRange('lh', S.lh, S.lh.toFixed(1));
+  setRange('ls', S.ls, `${S.ls.toFixed(2)} em`);
+  setRange('ws', S.ws, `${S.ws.toFixed(2)} em`);
+  setRange('measure', S.measure, `${S.measure} ${t('chars')}`);
+  $('#size-quick').textContent = `${S.size}%`;
+  $('#t-ruler').checked = S.ruler;
+  $('#t-motion').checked = S.reduceMotion;
+}
+function setRange(id, val, label) { $('#r-' + id).value = val; $('#o-' + id).textContent = label; }
+
+function wcagBadges(ratio, ui = false) {
+  const res = ui ? [[ratio >= 3, 'UI ≥ 3:1']] : [[ratio >= 4.5, 'AA'], [ratio >= 7, 'AAA']];
+  return res.map(([ok, txt]) => el('span', { class: 'badge ' + (ok ? 'pass' : 'fail') }, icon(ok ? 'check' : 'xmark'), ok ? txt : `${t('not')} ${txt}`));
+}
+function updateReadMeter() {
+  const sample = $('#read-sample');
+  sample.style.color = C.readText; sample.style.background = C.readBg; sample.style.fontFamily = S.font;
+  const r = contrast(C.readText, C.readBg);
+  $('#read-ratio').textContent = r.toFixed(2) + ' : 1';
+  $('#read-badges').replaceChildren(...wcagBadges(r));
+}
+function renderAudit() {
+  const rows = [
+    ['aText', C.text, C.surface, false], ['aMuted', C.muted, C.surface2, false],
+    ['aAccent', C.accent, C.surface, false], ['aBtn', C.onAccent, C.accentFill, false],
+    ['aBorder', C.borderStrong, C.surface, true], ['aFocus', C.focus, C.bg, true],
+    ['aRead', C.readText, C.readBg, false], ['aReadHead', C.readAccent, C.readBg, false]
+  ];
+  $('#audit').replaceChildren(...rows.map(([name, fg, bg, ui]) => {
+    const r = contrast(fg, bg);
+    return el('li', {},
+      el('span', { class: 'pair', style: `color:${fg};background:${bg}`, 'aria-hidden': 'true', text: ui ? '■' : 'Aa' }),
+      el('span', { class: 'meta' }, el('strong', { text: t(name) }), el('small', { text: `${r.toFixed(2)} : 1` })),
+      el('span', { class: 'badges' }, ...wcagBadges(r, ui)));
+  }));
+}
+
+function openSettings() {
+  const dlg = $('#settings');
+  if (typeof dlg.showModal === 'function') { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', '');
+}
+function bindSettings() {
+  $$('[data-open-settings]').forEach(b => b.addEventListener('click', openSettings));
+  $$('.lang-select').forEach(sel => sel.addEventListener('change', e => setLanguage(e.target.value)));
+  $$('[data-mode-btn]').forEach(b => b.addEventListener('click', () => {
+    S.mode = b.dataset.modeBtn; applySettings(); announce(t('modeAnn', { m: t(S.mode) }));
+  }));
+  $$('input[name="mode"]').forEach(i => i.addEventListener('change', () => { S.mode = i.value; applySettings(); }));
+  $('#accent-custom').addEventListener('input', e => { S.accent = e.target.value.toUpperCase(); applySettings(); });
+  $('#read-custom').addEventListener('change', e => { S.customRead = e.target.checked; applySettings(); });
+  $('#read-text-color').addEventListener('input', e => { S.readText = e.target.value.toUpperCase(); applySettings(); });
+  $('#read-bg-color').addEventListener('input', e => { S.readBg = e.target.value.toUpperCase(); applySettings(); });
+  $('#read-swap').addEventListener('click', () => { [S.readText, S.readBg] = [S.readBg, S.readText]; applySettings(); });
+  $('#read-fix').addEventListener('click', () => {
+    S.readText = ensureContrast(S.readText, [S.readBg], 7);
+    applySettings();
+    announce(t('fixed', { r: contrast(S.readText, S.readBg).toFixed(1) }));
+  });
+  $('#font-select').addEventListener('change', e => { S.font = e.target.value; applySettings(); });
+  ['size', 'lh', 'ls', 'ws', 'measure'].forEach(id => {
+    $('#r-' + id).addEventListener('input', e => { S[id] = parseFloat(e.target.value); applySettings(); });
+  });
+  $('#t-ruler').addEventListener('change', e => { S.ruler = e.target.checked; applySettings(); });
+  $('#t-motion').addEventListener('change', e => { S.reduceMotion = e.target.checked; applySettings(); });
+  $('#reset-btn').addEventListener('click', () => {
+    const keep = { lang: S.lang, trTo: S.trTo };
+    S = { ...DEFAULTS, ...keep }; lastTintMode = null;
+    buildLanguageControls(); applySettings(); announce(t('resetDone'));
+  });
+  $('#size-down').addEventListener('click', () => { S.size = Math.max(80, S.size - 10); applySettings(); });
+  $('#size-up').addEventListener('click', () => { S.size = Math.min(200, S.size + 10); applySettings(); });
+  $('#out-mode').addEventListener('change', e => { S.outMode = e.target.value; saveSettings(); });
+  mqDark.addEventListener?.('change', () => { if (S.mode === 'system') applySettings(); });
+}
+
+/* =========================================================
+   Reading ruler
+   ========================================================= */
+function bindRuler() {
+  const area = $('#reading-area'), ruler = $('#ruler');
+  area.addEventListener('pointermove', e => {
+    if (!S.ruler) return;
+    const h = parseFloat(getComputedStyle(area).fontSize) * S.lh + 8;
+    ruler.style.height = h + 'px';
+    ruler.style.top = (e.clientY - h / 2) + 'px';
+    ruler.style.display = 'block';
+  });
+  area.addEventListener('pointerleave', () => { ruler.style.display = 'none'; });
+}
+
+/* =========================================================
+   Tabs (WAI-ARIA tabs pattern, arrow-key navigation)
+   ========================================================= */
+const TABS = ['summary', 'tables', 'diagram', 'translate', 'source'];
+let activeTab = 'summary';
+let busy = false;
+function selectTab(id, focus = false) {
+  activeTab = id;
+  TABS.forEach(tb => {
+    const on = tb === id;
+    const b = $('#tab-' + tb);
+    b.setAttribute('aria-selected', String(on));
+    b.tabIndex = on ? 0 : -1;
+    $('#panel-' + tb).hidden = !on || busy;
+  });
+  if (focus) $('#tab-' + id).focus();
+}
+function bindTabs() {
+  TABS.forEach(tb => $('#tab-' + tb).addEventListener('click', () => selectTab(tb)));
+  $('.tabs').addEventListener('keydown', e => {
+    const i = TABS.indexOf(activeTab);
+    let n = null;
+    if (e.key === 'ArrowRight') n = (i + 1) % TABS.length;
+    else if (e.key === 'ArrowLeft') n = (i - 1 + TABS.length) % TABS.length;
+    else if (e.key === 'Home') n = 0;
+    else if (e.key === 'End') n = TABS.length - 1;
+    if (n !== null) { e.preventDefault(); selectTab(TABS[n], true); }
+  });
+}
+
+/* =========================================================
+   Rendering of AI output
+   ========================================================= */
+let lastData = null;
+const langAttrs = code => ({ lang: code, dir: dirOf(code) });
+function emptyState(ic, titleKey, textKey, withSample = true) {
+  return el('div', { class: 'empty' },
+    el('div', { class: 'empty-icon', 'aria-hidden': 'true' }, icon(ic)),
+    el('p', { class: 'empty-title', text: t(titleKey) }),
+    el('p', { class: 'empty-text', text: t(textKey) }),
+    withSample ? el('button', { type: 'button', class: 'btn btn-secondary', onclick: loadSample }, icon('flask'), t('seeExample')) : null);
+}
+function renderEmptyAll() {
+  $('#panel-summary').replaceChildren(emptyState('list-check', 'eSumT', 'eSumX'));
+  $('#panel-tables').replaceChildren(emptyState('table', 'eTabT', 'eTabX'));
+  $('#panel-diagram').replaceChildren(emptyState('diagram-project', 'eDiaT', 'eDiaX'));
+  $('#count-tables').textContent = '';
+}
+
+function renderSummary(d) {
+  const p = $('#panel-summary');
+  const la = langAttrs(d.lang);
+  p.replaceChildren();
+  if (d.title) p.append(el('h3', { class: 'doc-title', ...la, text: d.title }));
+  if (d.tldr) p.append(el('div', { class: 'callout', dir: la.dir },
+    el('div', { class: 'callout-icon', 'aria-hidden': 'true' }, icon('lightbulb')),
+    el('div', {}, el('p', { class: 'callout-label', lang: uiLang(), text: t('tldr') }), el('p', { ...la, text: d.tldr }))));
+  if (d.bullets.length) {
+    p.append(el('h4', { class: 'sec-title' }, icon('list-check'), t('tabSummary')));
+    p.append(el('ul', { class: 'keypoints', ...la }, d.bullets.map(b =>
+      el('li', {}, el('span', { class: 'kp-icon', 'aria-hidden': 'true' }, icon('circle-check')), el('span', { text: b })))));
+  }
+  if (d.keyConcepts.length) {
+    p.append(el('h4', { class: 'sec-title' }, icon('shapes'), t('keyConcepts')));
+    p.append(el('div', { class: 'concept-grid', ...la }, d.keyConcepts.map((k, i) =>
+      el('article', { class: 'concept' },
+        el('span', { class: 'concept-num', 'aria-hidden': 'true', text: i + 1 }),
+        el('h5', { text: k.title }), el('p', { text: k.content })))));
+  }
+}
+
+function buildTable(headers, rows, label, la) {
+  return el('table', { class: 'stackable', ...la },
+    el('caption', { class: 'sr-only', text: label }),
+    el('thead', {}, el('tr', {}, headers.map(h => el('th', { scope: 'col', text: h })))),
+    el('tbody', {}, rows.map(r => el('tr', {}, r.map((cell, j) =>
+      j === 0 ? el('th', { scope: 'row', 'data-label': headers[0], text: cell })
+              : el('td', { 'data-label': headers[j], text: cell }))))));
+}
+function renderTables(d) {
+  const p = $('#panel-tables');
+  const la = langAttrs(d.lang);
+  p.replaceChildren();
+  if (!d.tables.length && !d.glossary.length) { p.append(emptyState('table', 'noTabT', 'noTabX', false)); return; }
+  d.tables.forEach((tb, i) => {
+    const hid = 'tbl-h-' + i;
+    const title = tb.title || t('tableN', { n: i + 1 });
+    p.append(el('section', { class: 'table-block' },
+      el('h4', { class: 'sec-title', id: hid, ...la }, icon('table'), title),
+      tb.caption ? el('p', { class: 'table-caption-text', ...la, text: tb.caption }) : null,
+      el('div', { class: 'table-wrap', role: 'region', 'aria-labelledby': hid, tabindex: '0' }, buildTable(tb.headers, tb.rows, title, la))));
+  });
+  if (d.glossary.length) {
+    p.append(el('section', { class: 'table-block' },
+      el('h4', { class: 'sec-title', id: 'gloss-h' }, icon('book'), t('glossary')),
+      el('p', { class: 'table-caption-text', text: t('glossaryDesc') }),
+      el('div', { class: 'table-wrap', role: 'region', 'aria-labelledby': 'gloss-h', tabindex: '0' },
+        buildTable([t('gWord'), t('gMeaning')], d.glossary.map(g => [g.term, g.definition]), t('glossary'), la))));
+  }
+}
+
+function renderDiagram(d) {
+  const p = $('#panel-diagram');
+  const la = langAttrs(d.lang);
+  p.replaceChildren();
+  const mm = d.mindmap, fl = d.flow;
+  if (!mm.branches.length && !fl.steps.length) { p.append(emptyState('diagram-project', 'noDiaT', 'noDiaX', false)); return; }
+  if (mm.branches.length) {
+    p.append(el('section', {},
+      el('h4', { class: 'sec-title' }, icon('sitemap'), t('conceptMap')),
+      el('p', { class: 'lead', text: t('conceptMapDesc') }),
+      el('div', { class: 'mindmap' + (mm.branches.length > 3 ? ' tree' : ''), style: `--cols:${Math.min(mm.branches.length, 3)}`, ...la },
+        el('div', { class: 'mm-center' }, el('span', { class: 'sr-only', text: t('centralIdea') }), mm.center),
+        el('div', { class: 'mm-stem', 'aria-hidden': 'true' }),
+        el('ul', { class: 'mm-branches', 'aria-label': t('branchesOf', { c: mm.center }) },
+          mm.branches.map((b, i) => el('li', { class: 'mm-branch', style: `--branch:var(--b${i % 6})` },
+            el('div', { class: 'mm-branch-head' }, el('span', { class: 'mm-num', 'aria-hidden': 'true', text: i + 1 }), el('strong', { text: b.label })),
+            b.points.length ? el('ul', {}, b.points.map(pt => el('li', { text: pt }))) : null))))));
+  }
+  if (fl.steps.length) {
+    p.append(el('section', {},
+      el('h4', { class: 'sec-title' }, icon('arrow-down-1-9'), fl.title ? el('span', { ...la, text: fl.title }) : t('steps')),
+      el('p', { class: 'lead', text: t('stepsDesc') }),
+      el('ol', { class: 'flow', ...la }, fl.steps.map((s, i) => el('li', { class: 'flow-step' },
+        el('span', { class: 'flow-num', 'aria-hidden': 'true', text: i + 1 }),
+        el('div', {}, el('strong', { text: s.label }), s.detail ? el('p', { text: s.detail }) : null),
+        i < fl.steps.length - 1 ? el('span', { class: 'flow-arrow', 'aria-hidden': 'true' }, icon('arrow-down')) : null)))));
+  }
+}
+
+const paragraphs = text => text.split(/\n+/).map(s => s.trim()).filter(Boolean);
+function renderSource() {
+  const text = $('#source-text').value;
+  const p = $('#panel-source');
+  p.replaceChildren();
+  if (!text.trim()) { p.append(emptyState('file-lines', 'eSrcT', 'eSrcX', false)); return; }
+  const lc = detectLang(text);
+  p.append(el('h4', { class: 'sec-title' }, icon('file-lines'), t('tabSource'), el('span', { class: 'pill', style: 'font-size:.75em', text: langName(lc) })));
+  p.append(el('div', langAttrs(lc), paragraphs(text).map(par => el('p', { text: par }))));
+}
+
+function renderAll(d) {
+  lastData = d;
+  renderSummary(d); renderTables(d); renderDiagram(d); renderSource();
+  const n = d.tables.length + (d.glossary.length ? 1 : 0);
+  $('#count-tables').textContent = n ? String(n) : '';
+  selectTab(activeTab);
+  populateVoiceSelect();
+}
+
+/* =========================================================
+   Gemini API (with automatic model fallback)
+   ========================================================= */
+const store = {
+  get: k => { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } },
+  set: (k, v) => { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch (e) {} }
+};
+const getUserKey = () => store.get(KEY_STORE);
+const getTrKey = () => store.get(TR_KEY_STORE);
+
+function modelOrder() {
+  return [...new Set([store.get(MODEL_STORE), MODEL, ...MODEL_FALLBACKS].filter(Boolean))];
+}
+let lastModelUsed = MODEL;
+
+async function callOnce(model, key, payload) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
+  let res;
+  try {
+    res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+  } catch (netErr) {
+    throw Object.assign(new Error('network'), { kind: 'network', noKey: !key });
+  }
+  if (!res.ok) {
+    let detail = '';
+    try { detail = (await res.json()).error?.message || ''; } catch (_) {}
+    throw Object.assign(new Error('HTTP ' + res.status + ' ' + detail), { status: res.status, detail, noKey: !key, model });
+  }
+  const j = await res.json();
+  if (j.promptFeedback?.blockReason) throw Object.assign(new Error('blocked'), { kind: 'blocked' });
+  const txt = (j.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('').trim();
+  if (!txt) throw Object.assign(new Error('empty'), { kind: 'empty', model });
+  return txt;
+}
+
+/** Tries each model in turn; retries briefly on overload, moves on if a model is busy, out of quota or missing. */
+async function callGemini(payload, triesPerModel = 2, onModel) {
+  const key = (API_KEY || getUserKey()).trim();
+  let lastErr;
+  for (const model of modelOrder()) {
+    onModel?.(model);
+    for (let i = 0; i < triesPerModel; i++) {
+      try {
+        const txt = await callOnce(model, key, payload);
+        lastModelUsed = model;
+        store.set(MODEL_STORE, model);
+        return txt;
+      } catch (e) {
+        lastErr = e;
+        if ([400, 401, 403].includes(e.status) || e.kind === 'blocked' || e.kind === 'network') throw e;
+        if (e.status === 404) break;
+        if (i < triesPerModel - 1) await new Promise(r => setTimeout(r, 1200 * (i + 1)));
+      }
+    }
+  }
+  throw Object.assign(lastErr || new Error('failed'), { allModels: true });
+}
+
+/** Turns an API error into a plain-language explanation of the real cause. */
+function explainError(e) {
+  const d = (e?.detail || '').toLowerCase();
+  const extra = e?.detail ? t('googleMsg', { d: e.detail.slice(0, 160) }) : '';
+  if (e?.kind === 'parse') return t('eParse');
+  if (e?.kind === 'blocked') return t('eBlocked');
+  if (e?.kind === 'empty') return t('eEmpty');
+  if (e?.noKey && (e?.status === 400 || e?.status === 401 || e?.status === 403 || e?.kind === 'network')) return t('eNoKey');
+  if (e?.kind === 'network') return t('eNetwork');
+  if (e?.status === 400 && d.includes('api key')) return t('eBadKey');
+  if (e?.status === 400 && (d.includes('location') || d.includes('region'))) return t('eRegion');
+  if (e?.status === 401 || e?.status === 403) return t('eForbidden');
+  if (e?.status === 404) return t('e404') + extra;
+  if (e?.status === 429) return t('e429') + extra;
+  if (e?.status >= 500) return t('e5xx') + extra;
+  return t('eOther', { code: e?.status ? t('code', { n: e.status }) : '' });
+}
+const keyAction = e => (e?.noKey || [400, 401, 403].includes(e?.status)) ? { label: t('settings'), onClick: openAiSettings } : null;
+function openAiSettings() {
+  openSettings();
+  $('#ai-section').scrollIntoView({ block: 'start' });
+  $('#api-key').focus();
+}
+
+/* Output-language instruction shared by every AI feature */
+function outLangRule(text) {
+  return S.outMode === 'mine'
+    ? `Write every field in ${englishName(S.lang)} (language code "${S.lang}"), even if the TEXT is in another language — translate while simplifying.`
+    : 'Write every field in the same language as the TEXT.';
+}
+
+const FORMAT_SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    title: { type: 'STRING' },
+    tldr: { type: 'STRING' },
+    bullets: { type: 'ARRAY', items: { type: 'STRING' } },
+    keyConcepts: { type: 'ARRAY', items: { type: 'OBJECT', properties: { title: { type: 'STRING' }, content: { type: 'STRING' } }, required: ['title', 'content'] } },
+    tables: { type: 'ARRAY', items: { type: 'OBJECT', properties: {
+      title: { type: 'STRING' }, caption: { type: 'STRING' },
+      headers: { type: 'ARRAY', items: { type: 'STRING' } },
+      rows: { type: 'ARRAY', items: { type: 'ARRAY', items: { type: 'STRING' } } }
+    }, required: ['title', 'headers', 'rows'] } },
+    glossary: { type: 'ARRAY', items: { type: 'OBJECT', properties: { term: { type: 'STRING' }, definition: { type: 'STRING' } }, required: ['term', 'definition'] } },
+    mindmap: { type: 'OBJECT', properties: {
+      center: { type: 'STRING' },
+      branches: { type: 'ARRAY', items: { type: 'OBJECT', properties: { label: { type: 'STRING' }, points: { type: 'ARRAY', items: { type: 'STRING' } } }, required: ['label', 'points'] } }
+    }, required: ['center', 'branches'] },
+    flow: { type: 'OBJECT', properties: {
+      title: { type: 'STRING' },
+      steps: { type: 'ARRAY', items: { type: 'OBJECT', properties: { label: { type: 'STRING' }, detail: { type: 'STRING' } }, required: ['label', 'detail'] } }
+    }, required: ['steps'] }
+  },
+  required: ['title', 'tldr', 'bullets', 'keyConcepts', 'tables', 'glossary', 'mindmap', 'flow']
+};
+
+const formatPrompt = text => `You are an expert in plain language, Universal Design for Learning (UDL) and the W3C Cognitive Accessibility (COGA) guidance.
+Restructure the TEXT below so that people with cognitive or learning disabilities, dyslexia, ADHD or low literacy can understand it easily.
+
+LANGUAGE: ${outLangRule(text)}
+
+RULES
+- Plain, everyday words. Short sentences (ideally under 15 words). One idea per sentence.
+- Active voice. No idioms or metaphors. Explain unavoidable technical terms in the glossary.
+- Stay accurate. Do not add facts that are not in the text.
+
+FIELDS
+- title: a short, clear title (max 8 words).
+- tldr: 1–2 sentences: what the text is about and why it matters.
+- bullets: 4–8 key points, each one short sentence.
+- keyConcepts: 2–6 cards. title = the concept in 1–4 words; content = 1–2 short sentences.
+- tables: 1–3 explanatory tables that make the content clearer (comparison, categories, cause → effect, who/what/when, pros/cons, term → example). 2–4 columns, 2–8 rows. The first column is the row label. Every row has exactly as many cells as there are headers. Short cells (max ~15 words). caption = one sentence saying what the table shows.
+- glossary: 0–8 difficult words from the text, each with a simple definition.
+- mindmap: center = the main topic (1–4 words); 3–6 branches, each with a short label and 2–4 short points.
+- flow: if the text describes a process, sequence, steps or a timeline, give 3–8 ordered steps (label = 1–5 words, detail = 1 short sentence) and a short title. Otherwise return an empty steps array.
+
+TEXT:
+"""
+${text}
+"""`;
+
+function normalize(d, lang) {
+  const arr = x => Array.isArray(x) ? x : [];
+  const str = x => (x == null ? '' : String(x)).trim();
+  return {
+    lang,
+    title: str(d.title), tldr: str(d.tldr),
+    bullets: arr(d.bullets).map(str).filter(Boolean),
+    keyConcepts: arr(d.keyConcepts).filter(k => k && str(k.title)).map(k => ({ title: str(k.title), content: str(k.content) })),
+    tables: arr(d.tables).filter(tb => tb && arr(tb.headers).length && arr(tb.rows).length).map(tb => {
+      const headers = tb.headers.map(str);
+      return { title: str(tb.title), caption: str(tb.caption), headers,
+        rows: tb.rows.map(r => { const row = arr(r).map(str); while (row.length < headers.length) row.push(''); return row.slice(0, headers.length); }) };
+    }),
+    glossary: arr(d.glossary).filter(g => g && str(g.term)).map(g => ({ term: str(g.term), definition: str(g.definition) })),
+    mindmap: { center: str(d.mindmap?.center) || str(d.title),
+      branches: arr(d.mindmap?.branches).filter(b => b && str(b.label)).map(b => ({ label: str(b.label), points: arr(b.points).map(str).filter(Boolean) })) },
+    flow: { title: str(d.flow?.title),
+      steps: arr(d.flow?.steps).filter(s => s && str(s.label)).map(s => ({ label: str(s.label), detail: str(s.detail) })) }
+  };
+}
+const parseJson = raw => { try { return JSON.parse(raw.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '')); } catch (e) { throw Object.assign(new Error('parse'), { kind: 'parse' }); } };
+
+function setBusy(on) {
+  busy = on;
+  $('#format-btn').disabled = on;
+  $('#format-label').textContent = t(on ? 'converting' : 'convert');
+  $('#reading-area').setAttribute('aria-busy', String(on));
+  $('#loader').hidden = !on;
+  selectTab(activeTab);
+}
+async function processText() {
+  const text = $('#source-text').value.trim();
+  if (!text) { toast(t('needText'), 'error'); $('#source-text').focus(); return; }
+  if (activeTab === 'translate' || activeTab === 'source') selectTab('summary');
+  setBusy(true);
+  $('#loader-msg').textContent = t('loading');
+  announce(t('working'));
+  const outLang = S.outMode === 'mine' ? S.lang : detectLang(text);
+  try {
+    const raw = await callGemini({
+      contents: [{ parts: [{ text: formatPrompt(text) }] }],
+      generationConfig: { responseMimeType: 'application/json', responseSchema: FORMAT_SCHEMA }
+    }, 2, m => { if (m !== MODEL) $('#loader-msg').textContent = t('loadingFallback', { m }); });
+    setBusy(false);
+    renderAll(normalize(parseJson(raw), outLang));
+    announce(t('ready'));
+  } catch (e) {
+    console.error(e);
+    setBusy(false);
+    toast(explainError(e), 'error', keyAction(e));
+  }
+}
+
+/* =========================================================
+   Samples (work without the API)
+   ========================================================= */
+const SAMPLES = {
+  el: {
+    text: `Ο Καθολικός Σχεδιασμός για τη Μάθηση (UDL) είναι ένα πλαίσιο που βοηθά τους εκπαιδευτικούς να σχεδιάζουν μαθήματα για όλους τους μαθητές από την αρχή. Βασίζεται σε τρεις αρχές.
+
+Η πρώτη αρχή είναι η εμπλοκή: δίνουμε στους μαθητές λόγους να ενδιαφερθούν και επιλογές για το πώς θα συμμετέχουν. Η δεύτερη αρχή είναι η αναπαράσταση: παρουσιάζουμε την ίδια πληροφορία με πολλούς τρόπους, για παράδειγμα με κείμενο, ήχο, εικόνες και διαγράμματα. Η τρίτη αρχή είναι η δράση και η έκφραση: οι μαθητές δείχνουν τι έμαθαν με διαφορετικούς τρόπους, όπως γραπτά, προφορικά ή με ένα έργο.
+
+Για να εφαρμόσει κανείς το UDL, ξεκινά με έναν σαφή μαθησιακό στόχο, εντοπίζει πιθανά εμπόδια, προσθέτει ευέλικτες επιλογές και στο τέλος αξιολογεί τι λειτούργησε. Το UDL συνδέεται με τις οδηγίες WCAG για την προσβασιμότητα στο διαδίκτυο και με τις οδηγίες COGA, που εστιάζουν σε άτομα με γνωστικές και μαθησιακές δυσκολίες.`,
+    data: {
+      title: 'Καθολικός Σχεδιασμός για τη Μάθηση (UDL)',
+      tldr: 'Το UDL βοηθά να σχεδιάζουμε μαθήματα που ταιριάζουν σε όλους, από την αρχή. Στηρίζεται σε τρεις αρχές: εμπλοκή, αναπαράσταση, δράση και έκφραση.',
+      bullets: ['Το UDL είναι ένα πλαίσιο για τον σχεδιασμό μαθημάτων.', 'Σχεδιάζουμε για όλους τους μαθητές από την αρχή.', 'Η εμπλοκή δίνει λόγους και επιλογές συμμετοχής.', 'Η αναπαράσταση δείχνει την πληροφορία με πολλούς τρόπους.', 'Η δράση και η έκφραση αφήνουν τους μαθητές να δείξουν τι έμαθαν με διάφορους τρόπους.', 'Το UDL συνδέεται με τις οδηγίες WCAG και COGA.'],
+      keyConcepts: [
+        { title: 'Εμπλοκή', content: 'Το «γιατί» της μάθησης. Κρατάμε το ενδιαφέρον με επιλογές και νόημα.' },
+        { title: 'Αναπαράσταση', content: 'Το «τι» της μάθησης. Η ίδια πληροφορία σε κείμενο, ήχο και εικόνα.' },
+        { title: 'Δράση & έκφραση', content: 'Το «πώς» της μάθησης. Πολλοί τρόποι για να δείξει κανείς τι ξέρει.' }
+      ],
+      tables: [
+        { title: 'Οι τρεις αρχές του UDL', caption: 'Τι σημαίνει κάθε αρχή και πώς φαίνεται στην τάξη.', headers: ['Αρχή', 'Ερώτημα', 'Τι κάνουμε', 'Παράδειγμα'],
+          rows: [['Εμπλοκή', 'Γιατί μαθαίνω;', 'Δίνουμε νόημα και επιλογές', 'Ο μαθητής διαλέγει θέμα εργασίας'],
+                 ['Αναπαράσταση', 'Τι μαθαίνω;', 'Δείχνουμε την πληροφορία με πολλούς τρόπους', 'Κείμενο, ηχογράφηση και διάγραμμα'],
+                 ['Δράση & έκφραση', 'Πώς δείχνω τι έμαθα;', 'Δίνουμε διαφορετικούς τρόπους απάντησης', 'Γραπτή εργασία, προφορική παρουσίαση ή βίντεο']] },
+        { title: 'UDL, WCAG και COGA', caption: 'Τρία πλαίσια που συμπληρώνουν το ένα το άλλο.', headers: ['Πλαίσιο', 'Εστιάζει σε', 'Βοηθά κυρίως'],
+          rows: [['UDL', 'Τον σχεδιασμό της μάθησης', 'Όλους τους μαθητές'],
+                 ['WCAG', 'Την προσβασιμότητα ιστοσελίδων και εφαρμογών', 'Άτομα με αναπηρίες'],
+                 ['COGA', 'Την κατανόηση και την εύκολη χρήση', 'Άτομα με γνωστικές και μαθησιακές δυσκολίες']] }
+      ],
+      glossary: [
+        { term: 'Πλαίσιο', definition: 'Ένα σύνολο από ιδέες και κανόνες που μας καθοδηγούν.' },
+        { term: 'Μαθησιακός στόχος', definition: 'Αυτό που θέλουμε να μάθει ο μαθητής στο τέλος.' },
+        { term: 'Εμπόδιο', definition: 'Κάτι που δυσκολεύει τον μαθητή να μάθει ή να συμμετέχει.' },
+        { term: 'Προσβασιμότητα', definition: 'Όταν κάτι μπορεί να το χρησιμοποιήσει ο καθένας, και άτομα με αναπηρία.' }
+      ],
+      mindmap: { center: 'UDL', branches: [
+        { label: 'Εμπλοκή', points: ['Ενδιαφέρον', 'Επιλογές', 'Κίνητρο'] },
+        { label: 'Αναπαράσταση', points: ['Κείμενο', 'Ήχος', 'Εικόνες και διαγράμματα'] },
+        { label: 'Δράση & έκφραση', points: ['Γραπτά', 'Προφορικά', 'Με ένα έργο'] },
+        { label: 'Σχετικές οδηγίες', points: ['WCAG: προσβάσιμο διαδίκτυο', 'COGA: γνωστική προσβασιμότητα'] }
+      ] },
+      flow: { title: 'Πώς εφαρμόζουμε το UDL', steps: [
+        { label: 'Θέτουμε στόχο', detail: 'Γράφουμε καθαρά τι θέλουμε να μάθουν οι μαθητές.' },
+        { label: 'Βρίσκουμε εμπόδια', detail: 'Σκεφτόμαστε τι μπορεί να δυσκολέψει κάποιους μαθητές.' },
+        { label: 'Προσθέτουμε επιλογές', detail: 'Δίνουμε ευέλικτους τρόπους μάθησης και έκφρασης.' },
+        { label: 'Αξιολογούμε', detail: 'Ελέγχουμε τι λειτούργησε και το βελτιώνουμε.' }
+      ] }
+    }
+  },
+  en: {
+    text: `Universal Design for Learning (UDL) is a framework that helps teachers design lessons for all learners from the start. It is based on three principles.
+
+The first principle is engagement: we give learners reasons to be interested and choices in how they take part. The second principle is representation: we present the same information in many ways, for example with text, audio, images and diagrams. The third principle is action and expression: learners show what they have learned in different ways, such as in writing, orally or through a project.
+
+To apply UDL, you start with a clear learning goal, identify possible barriers, add flexible options and finally evaluate what worked. UDL is linked to the WCAG guidelines for web accessibility and to the COGA guidance, which focuses on people with cognitive and learning disabilities.`,
+    data: {
+      title: 'Universal Design for Learning (UDL)',
+      tldr: 'UDL helps us design lessons that suit everyone from the start. It rests on three principles: engagement, representation, and action and expression.',
+      bullets: ['UDL is a framework for designing lessons.', 'We design for all learners from the start.', 'Engagement gives reasons and choices to take part.', 'Representation shows information in many ways.', 'Action and expression let learners show what they learned in different ways.', 'UDL is linked to the WCAG and COGA guidance.'],
+      keyConcepts: [
+        { title: 'Engagement', content: 'The “why” of learning. We keep interest alive with choices and meaning.' },
+        { title: 'Representation', content: 'The “what” of learning. The same information as text, audio and images.' },
+        { title: 'Action & expression', content: 'The “how” of learning. Many ways to show what you know.' }
+      ],
+      tables: [
+        { title: 'The three principles of UDL', caption: 'What each principle means and how it looks in class.', headers: ['Principle', 'Question', 'What we do', 'Example'],
+          rows: [['Engagement', 'Why am I learning?', 'We give meaning and choices', 'The learner chooses a project topic'],
+                 ['Representation', 'What am I learning?', 'We show information in many ways', 'Text, audio recording and diagram'],
+                 ['Action & expression', 'How do I show what I learned?', 'We offer different ways to respond', 'Written work, oral presentation or video']] },
+        { title: 'UDL, WCAG and COGA', caption: 'Three frameworks that complement each other.', headers: ['Framework', 'Focuses on', 'Mainly helps'],
+          rows: [['UDL', 'The design of learning', 'All learners'],
+                 ['WCAG', 'Accessibility of websites and apps', 'Disabled people'],
+                 ['COGA', 'Understanding and ease of use', 'People with cognitive and learning disabilities']] }
+      ],
+      glossary: [
+        { term: 'Framework', definition: 'A set of ideas and rules that guide us.' },
+        { term: 'Learning goal', definition: 'What we want the learner to know at the end.' },
+        { term: 'Barrier', definition: 'Something that makes it hard to learn or take part.' },
+        { term: 'Accessibility', definition: 'When everyone can use something, including disabled people.' }
+      ],
+      mindmap: { center: 'UDL', branches: [
+        { label: 'Engagement', points: ['Interest', 'Choices', 'Motivation'] },
+        { label: 'Representation', points: ['Text', 'Audio', 'Images and diagrams'] },
+        { label: 'Action & expression', points: ['Writing', 'Speaking', 'A project'] },
+        { label: 'Related guidance', points: ['WCAG: accessible web', 'COGA: cognitive accessibility'] }
+      ] },
+      flow: { title: 'How we apply UDL', steps: [
+        { label: 'Set a goal', detail: 'Write clearly what learners should learn.' },
+        { label: 'Find barriers', detail: 'Think about what may be hard for some learners.' },
+        { label: 'Add options', detail: 'Offer flexible ways to learn and to express.' },
+        { label: 'Evaluate', detail: 'Check what worked and improve it.' }
+      ] }
+    }
+  }
+};
+function loadSample() {
+  const code = S.lang === 'el' ? 'el' : 'en';
+  $('#source-text').value = SAMPLES[code].text;
+  updateCount();
+  renderAll(normalize(SAMPLES[code].data, code));
+  selectTab('summary');
+  toast(t('sampleLoaded'), 'info');
+}
+
+/* =========================================================
+   Translation — Google Cloud Translation API, with Gemini as fallback
+   ========================================================= */
+let lastTranslation = null;
+let translating = false;
+
+async function googleTranslate(text, from, to, key) {
+  const lines = text.split('\n');
+  const idx = lines.map((l, i) => l.trim() ? i : -1).filter(i => i >= 0);
+  const out = [...lines];
+  let detected = from !== 'auto' ? from : null;
+  // Batch to stay within API limits (max 128 segments, ~30k chars per request)
+  for (let start = 0; start < idx.length;) {
+    let end = start, chars = 0;
+    while (end < idx.length && end - start < 100 && chars + lines[idx[end]].length < 25000) { chars += lines[idx[end]].length; end++; }
+    if (end === start) end = start + 1;
+    const batch = idx.slice(start, end);
+    const body = { q: batch.map(i => lines[i]), target: to, format: 'text' };
+    if (from !== 'auto') body.source = from;
+    let res;
+    try {
+      res = await fetch(`https://translation.googleapis.com/language/translate/v2?key=${encodeURIComponent(key)}`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    } catch (e) { throw Object.assign(new Error('network'), { kind: 'network' }); }
+    if (!res.ok) {
+      let detail = ''; try { detail = (await res.json()).error?.message || ''; } catch (_) {}
+      throw Object.assign(new Error('HTTP ' + res.status), { status: res.status, detail });
+    }
+    const j = await res.json();
+    (j.data?.translations || []).forEach((tr, k) => {
+      const ta = document.createElement('textarea'); ta.innerHTML = tr.translatedText; // decode any HTML entities
+      out[batch[k]] = ta.value;
+      if (!detected && tr.detectedSourceLanguage) detected = tr.detectedSourceLanguage;
+    });
+    start = end;
+  }
+  return { text: out.join('\n'), engine: 'google', detected: detected || detectLang(text) };
+}
+
+async function geminiTranslate(text, from, to) {
+  const prompt = `Translate the TEXT into ${englishName(to)} (language code "${to}").
+${from !== 'auto' ? `The source language is ${englishName(from)}.` : 'First detect the source language.'}
+Keep the meaning exact. Keep paragraphs and line breaks. Use clear, natural language. Do not add explanations.
+Return "detectedLanguage" as an ISO 639-1 code and "translation" as the translated text.
+
+TEXT:
+"""
+${text}
+"""`;
+  const raw = await callGemini({
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: { responseMimeType: 'application/json', responseSchema: {
+      type: 'OBJECT', properties: { detectedLanguage: { type: 'STRING' }, translation: { type: 'STRING' } }, required: ['detectedLanguage', 'translation'] } }
+  });
+  const j = parseJson(raw);
+  return { text: String(j.translation || '').trim(), engine: 'gemini', detected: from !== 'auto' ? from : (j.detectedLanguage || detectLang(text)) };
+}
+
+async function doTranslate(text, from, to) {
+  const key = (getTrKey() || getUserKey() || API_KEY).trim();
+  if (key) {
+    try { return await googleTranslate(text, from, to, key); }
+    catch (e) { console.warn('Google Translate unavailable, using Gemini:', e); }
+  }
+  return geminiTranslate(text, from, to);
+}
+
+function translateSourceText() {
+  const which = $('input[name="tr-src"]:checked').value;
+  if (which === 'summary') { const s = summaryText(); if (s) return s; }
+  return $('#source-text').value.trim();
+}
+function renderTranslation() {
+  const box = $('#tr-result');
+  box.replaceChildren();
+  if (!lastTranslation) {
+    box.append(emptyState('language', 'trEmptyT', 'trEmptyX', false));
+    return;
+  }
+  const tr = lastTranslation;
+  box.append(
+    el('div', { class: 'tr-meta' },
+      el('span', { class: 'pill' }, icon(tr.engine === 'google' ? 'language' : 'robot'), t(tr.engine === 'google' ? 'trByGoogle' : 'trByGemini')),
+      tr.detected ? el('span', { class: 'pill' }, icon('magnifying-glass'), t('trDetected', { lang: langName(tr.detected) })) : null,
+      el('span', { class: 'pill' }, icon('arrow-right'), langName(tr.lang))),
+    el('div', { class: 'tr-text', ...langAttrs(tr.lang) }, paragraphs(tr.text).map(p => el('p', { text: p }))),
+    el('div', { class: 'tr-result-actions' },
+      el('button', { type: 'button', class: 'btn btn-secondary btn-sm', onclick: () => speak(tr.text, tr.lang) }, icon('volume-high'), t('ttsTitle')),
+      el('button', { type: 'button', class: 'btn btn-secondary btn-sm', onclick: useTranslationAsSource }, icon('arrow-turn-up'), t('trUse')),
+      el('button', { type: 'button', class: 'btn btn-secondary btn-sm', onclick: async () => toast(t(await copyText(tr.text) ? 'copied' : 'copyFail'), 'info') }, icon('copy'), t('copy'))));
+}
+function useTranslationAsSource() {
+  if (!lastTranslation) return;
+  $('#source-text').value = lastTranslation.text;
+  updateCount(); renderSource();
+  $('#source-text').focus();
+  toast(t('trUsed'), 'info');
+}
+async function translateNow() {
+  if (translating) return;
+  const text = translateSourceText();
+  const from = $('#tr-from').value, to = $('#tr-to').value;
+  if (!text) { toast(t('trNeed'), 'error'); return; }
+  if (from === to) { toast(t('trSame'), 'error'); return; }
+  translating = true;
+  const btn = $('#tr-btn'); btn.disabled = true; $('#tr-btn-label').textContent = t('trBusy');
+  try {
+    const r = await doTranslate(text, from, to);
+    lastTranslation = { ...r, lang: to };
+    renderTranslation();
+    announce(t('trDone'));
+  } catch (e) {
+    console.error(e);
+    toast(explainError(e), 'error', keyAction(e));
+  } finally {
+    translating = false; btn.disabled = false; $('#tr-btn-label').textContent = t('trBtn');
+  }
+}
+function openGoogleTranslate() {
+  let text = translateSourceText();
+  if (!text) { toast(t('trNeed'), 'error'); return; }
+  const long = text.length > 4800;
+  if (long) text = text.slice(0, 4800);
+  const url = `https://translate.google.com/?sl=${encodeURIComponent($('#tr-from').value)}&tl=${encodeURIComponent($('#tr-to').value)}&text=${encodeURIComponent(text)}&op=translate`;
+  window.open(url, '_blank', 'noopener');
+  if (long) toast(t('trLong'), 'info');
+}
+function bindTranslate() {
+  $('#tr-btn').addEventListener('click', translateNow);
+  $('#tr-open').addEventListener('click', openGoogleTranslate);
+  $('#tr-from').addEventListener('change', e => { S.trFrom = e.target.value; saveSettings(); });
+  $('#tr-to').addEventListener('change', e => { S.trTo = e.target.value; saveSettings(); });
+  $('#tr-swap').addEventListener('click', () => {
+    const from = $('#tr-from').value === 'auto' ? detectLang(translateSourceText()) : $('#tr-from').value;
+    S.trFrom = S.trTo; S.trTo = from;
+    $('#tr-from').value = S.trFrom; $('#tr-to').value = S.trTo; saveSettings();
+  });
+}
+
+/* =========================================================
+   Text-to-speech (sentence chunking avoids Chrome's ~15s cut-off)
+   ========================================================= */
+const synth = window.speechSynthesis;
+let voices = [], ttsState = 'idle';
+function summaryText() {
+  if (!lastData) return '';
+  return [lastData.title, lastData.tldr, ...lastData.bullets].filter(Boolean).join('\n');
+}
+const ttsWhich = () => $('input[name="tts-src"]:checked').value;
+function getReadText(which = ttsWhich()) {
+  if (which === 'summary') return summaryText() || $('#source-text').value;
+  if (which === 'translation') return lastTranslation?.text || '';
+  return $('#source-text').value;
+}
+function knownLang(which = ttsWhich()) {
+  if (which === 'summary' && lastData) return lastData.lang;
+  if (which === 'translation' && lastTranslation) return lastTranslation.lang;
+  return detectLang(getReadText(which));
+}
+const resolveTtsLang = (override) => S.ttsLang !== 'auto' ? S.ttsLang : (override || knownLang());
+const voiceScore = v => (/natural|neural|premium|enhanced|online/i.test(v.name) ? 3 : 0) + (/google|microsoft/i.test(v.name) ? 1 : 0);
+const voicesFor = code => voices.filter(v => v.lang.toLowerCase().replace('_', '-').startsWith(code.slice(0, 2).toLowerCase())).sort((a, b) => voiceScore(b) - voiceScore(a));
+function populateVoiceSelect() {
+  const sel = $('#tts-voice');
+  if (!sel) return;
+  const list = voicesFor(resolveTtsLang());
+  const prev = sel.value;
+  sel.replaceChildren();
+  if (!list.length) sel.append(el('option', { value: '', text: t('defaultVoice') }));
+  list.forEach(v => sel.append(el('option', { value: v.name, text: v.name + (voiceScore(v) >= 3 ? ' ★' : '') })));
+  if (list.some(v => v.name === prev)) sel.value = prev;
+}
+function loadVoices() { if (!synth) return; voices = synth.getVoices(); populateVoiceSelect(); }
+function chunkText(text) {
+  const sentences = text.split(/\n+/).flatMap(line => line.match(/[^.!?;…。！？؟]+[.!?;…。！？؟]*\s*/g) || []).map(s => s.trim()).filter(Boolean);
+  const chunks = [];
+  let cur = '';
+  for (const s of sentences) {
+    if ((cur + ' ' + s).length > 220 && cur) { chunks.push(cur); cur = s; } else cur = cur ? cur + ' ' + s : s;
+  }
+  if (cur) chunks.push(cur);
+  return chunks;
+}
+function setTts(state) {
+  ttsState = state;
+  $('#tts-status').dataset.state = state;
+  $('#tts-status-text').textContent = t({ idle: 'ttsIdle', playing: 'ttsPlaying', paused: 'ttsPaused' }[state]);
+  $('#tts-play-label').textContent = t(state === 'paused' ? 'resume' : 'play');
+  $('#tts-pause').disabled = state !== 'playing';
+  $('#tts-stop').disabled = state === 'idle';
+}
+function speak(textOverride, langOverride) {
+  if (!synth) { toast(t('ttsUnsupported'), 'error'); return; }
+  if (!textOverride && ttsState === 'paused') { synth.resume(); setTts('playing'); return; }
+  const text = (textOverride || getReadText()).trim();
+  if (!text) { toast(t('ttsEmpty'), 'error'); return; }
+  synth.cancel();
+  const lang = textOverride ? (S.ttsLang !== 'auto' ? S.ttsLang : (langOverride || detectLang(text))) : resolveTtsLang();
+  const chosen = voices.find(v => v.name === $('#tts-voice').value);
+  const voice = chosen && chosen.lang.toLowerCase().startsWith(lang.slice(0, 2).toLowerCase()) ? chosen : voicesFor(lang)[0];
+  const rate = parseFloat($('#tts-rate').value);
+  const chunks = chunkText(text);
+  chunks.forEach((ch, i) => {
+    const u = new SpeechSynthesisUtterance(ch);
+    u.lang = lang; if (voice) u.voice = voice; u.rate = rate; u.pitch = 1;
+    if (i === chunks.length - 1) u.onend = () => setTts('idle');
+    u.onerror = e => { if (e.error !== 'interrupted' && e.error !== 'canceled') setTts('idle'); };
+    synth.speak(u);
+  });
+  setTts('playing');
+}
+function bindTts() {
+  if (synth) { loadVoices(); synth.onvoiceschanged = loadVoices; }
+  $('#tts-play').addEventListener('click', () => speak());
+  $('#tts-pause').addEventListener('click', () => { if (ttsState === 'playing') { synth.pause(); setTts('paused'); } });
+  $('#tts-stop').addEventListener('click', () => { synth?.cancel(); setTts('idle'); });
+  $('#tts-language').addEventListener('change', e => { S.ttsLang = e.target.value; saveSettings(); populateVoiceSelect(); });
+  $$('input[name="tts-src"]').forEach(i => i.addEventListener('change', populateVoiceSelect));
+  $('#tts-rate').addEventListener('input', e => { $('#tts-rate-out').textContent = parseFloat(e.target.value).toFixed(2).replace(/0$/, '') + '×'; });
+}
+
+/* =========================================================
+   AI tutor
+   ========================================================= */
+const chat = [];
+function mdLite(text) {
+  const frag = document.createDocumentFragment();
+  const inline = s => s.split(/(\*\*[^*]+\*\*)/g).map(p => p.startsWith('**') && p.endsWith('**') ? el('strong', { text: p.slice(2, -2) }) : document.createTextNode(p.replace(/\*/g, '')));
+  let list = null, listType = null;
+  for (const raw of text.split('\n')) {
+    const line = raw.trim();
+    const ul = line.match(/^[-*•]\s+(.*)/), ol = line.match(/^\d+[.)]\s+(.*)/);
+    if (ul || ol) {
+      const type = ul ? 'ul' : 'ol';
+      if (!list || listType !== type) { list = el(type); listType = type; frag.append(list); }
+      list.append(el('li', {}, inline((ul || ol)[1])));
+    } else {
+      list = null;
+      if (line) frag.append(el('p', {}, inline(line.replace(/^#+\s*/, ''))));
+    }
+  }
+  return frag;
+}
+function addMsg(role, text, i18nKey) {
+  const isAi = role === 'ai';
+  const body = el('div', { class: 'msg-body' });
+  if (i18nKey) body.append(el('span', { 'data-i18n': i18nKey, text: t(i18nKey) }));
+  else if (text == null) body.append(el('span', { class: 'typing', 'aria-hidden': 'true' }, el('i'), el('i'), el('i')), el('span', { class: 'sr-only', text: t('typing') }));
+  else if (isAi) body.append(mdLite(text));
+  else { body.textContent = text; body.dir = 'auto'; }
+  const content = el('div', { class: 'msg-content' }, el('span', { class: 'sr-only', text: t(isAi ? 'helper' : 'you') }), body);
+  const msg = el('div', { class: 'msg ' + (isAi ? 'msg-ai' : 'msg-user') },
+    el('span', { class: 'msg-avatar', 'aria-hidden': 'true' }, icon(isAi ? 'robot' : 'user')), content);
+  $('#chat-log').append(msg);
+  $('#chat-log').scrollTop = $('#chat-log').scrollHeight;
+  return msg;
+}
+function fillMsg(msg, text, isError = false) {
+  const body = $('.msg-body', msg);
+  body.replaceChildren(mdLite(text));
+  body.classList.toggle('error', isError);
+  if (!isError) {
+    const lc = detectLang(text, S.lang);
+    body.lang = lc; body.dir = dirOf(lc);
+    $('.msg-content', msg).append(el('div', { class: 'msg-tools' },
+      el('button', { type: 'button', class: 'btn btn-ghost btn-sm', onclick: () => speak(text, lc) }, icon('volume-high'), t('ttsTitle'))));
+  }
+  $('#chat-log').scrollTop = $('#chat-log').scrollHeight;
+}
+async function sendChat(message) {
+  const msg = (message ?? $('#chat-input').value).trim();
+  if (!msg) return;
+  const ctx = $('#source-text').value.trim();
+  if (!ctx) { toast(t('needChatText'), 'error'); $('#source-text').focus(); return; }
+  addMsg('user', msg);
+  $('#chat-input').value = '';
+  const pending = addMsg('ai', null);
+  chat.push({ role: 'user', parts: [{ text: msg }] });
+  const sys = `You are a patient, friendly study tutor following Universal Design for Learning (UDL) and W3C cognitive accessibility (COGA) guidance.
+The learner's language is ${englishName(S.lang)}. Reply in ${englishName(S.lang)}, unless the learner writes the question in a different language — then reply in the language of the question.
+- Use plain, everyday words and short sentences (about 15 words max).
+- For several items or steps, use a short bullet list starting with "- ".
+- Bold at most 2–3 key words with **double asterisks**.
+- Give one concrete, everyday example when it helps.
+- Keep answers under about 150 words unless the learner asks for more.
+- Base answers on the CONTEXT. If the answer is not in it, say so gently, then give a short general explanation.
+CONTEXT:
+"""${ctx}"""`;
+  try {
+    const reply = await callGemini({ contents: chat, systemInstruction: { parts: [{ text: sys }] } });
+    chat.push({ role: 'model', parts: [{ text: reply }] });
+    fillMsg(pending, reply);
+  } catch (e) {
+    console.error(e);
+    chat.pop();
+    fillMsg(pending, explainError(e), true);
+  }
+}
+function bindChat() {
+  addMsg('ai', null, 'chatWelcome');
+  $('#chat-form').addEventListener('submit', e => { e.preventDefault(); sendChat(); });
+  $$('.chip').forEach(c => c.addEventListener('click', () => sendChat(t(c.dataset.q))));
+}
+
+/* =========================================================
+   Video script
+   ========================================================= */
+async function generateVideo() {
+  const text = $('#source-text').value.trim();
+  const tool = $('#video-tool').value;
+  if (!text) { toast(t('videoNeed'), 'error'); return; }
+  const btn = $('#video-btn');
+  btn.disabled = true; $('#video-btn-label').textContent = t('videoBusy');
+  const spoken = S.outMode === 'mine' ? englishName(S.lang) : 'the same language as the TEXT';
+  const prompt = `Act as a professional educational video producer. Create a detailed script and visual prompt based on the TEXT, tailored to the AI video tool: ${tool}.
+- Avatar tools (Synthesia, HeyGen): speaker demeanour, the exact spoken script, and short on-screen text.
+- Generative tools (OpenAI Sora, Runway): detailed visual scene descriptions, camera movement, subjects, lighting; no spoken text. Write the visual prompts in English.
+- Stock tools (InVideo): scene-by-scene descriptions plus a voice-over script.
+Follow cognitive accessibility (COGA) guidance: plain language, one idea per scene, short on-screen captions, calm pacing. Target 30–60 seconds.
+Write the spoken script, captions and your section headings in ${spoken}.
+
+TEXT:
+${text}`;
+  try {
+    const out = await callGemini({ contents: [{ parts: [{ text: prompt }] }] });
+    $('#video-text').value = out;
+    $('#video-init').hidden = true; $('#video-result').hidden = false;
+    $('#video-text').focus();
+    announce(t('videoReady'));
+  } catch (e) {
+    console.error(e);
+    toast(explainError(e), 'error', keyAction(e));
+  } finally {
+    btn.disabled = false; $('#video-btn-label').textContent = t('videoGen');
+  }
+}
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); return true; }
+  catch (e) {
+    const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch (_) {} ta.remove(); return ok;
+  }
+}
+function bindVideo() {
+  $('#video-btn').addEventListener('click', generateVideo);
+  $('#video-copy').addEventListener('click', async () => toast(t(await copyText($('#video-text').value) ? 'copied' : 'copyFail'), 'info'));
+  $('#video-new').addEventListener('click', () => { $('#video-result').hidden = true; $('#video-init').hidden = false; $('#video-tool').focus(); });
+}
+
+/* =========================================================
+   API keys
+   ========================================================= */
+function bindApiKey() {
+  const input = $('#api-key'), trInput = $('#tr-key');
+  const aiStatus = $('#ai-status'), trStatus = $('#tr-status');
+  input.value = getUserKey(); trInput.value = getTrKey();
+  const show = (box, msg, ok) => { box.hidden = false; box.classList.toggle('bad', !ok); box.replaceChildren(icon(ok ? 'circle-check' : 'triangle-exclamation'), el('span', { text: msg })); };
+  if (API_KEY) show(aiStatus, t('keyCanvas'), true);
+  $$('[data-reveal]').forEach(b => b.addEventListener('click', () => {
+    const f = $('#' + b.dataset.reveal);
+    const vis = f.type === 'password';
+    f.type = vis ? 'text' : 'password';
+    b.setAttribute('aria-pressed', String(vis));
+    b.textContent = t(vis ? 'hide' : 'show');
+  }));
+  $('#api-key-clear').addEventListener('click', () => {
+    input.value = ''; trInput.value = ''; store.set(KEY_STORE, ''); store.set(TR_KEY_STORE, '');
+    trStatus.hidden = true; show(aiStatus, t('keyDeleted'), true);
+  });
+  $('#api-test').addEventListener('click', async () => {
+    store.set(KEY_STORE, input.value.trim());
+    store.set(TR_KEY_STORE, trInput.value.trim());
+    trStatus.hidden = true;
+    if (!API_KEY && !input.value.trim()) { show(aiStatus, t('keyFirst'), false); input.focus(); return; }
+    show(aiStatus, t('testing'), true);
+    try {
+      await callGemini({ contents: [{ parts: [{ text: 'Reply with the single word: OK' }] }] }, 1, m => show(aiStatus, t('testingModel', { m }), true));
+      show(aiStatus, t('keyOk', { m: lastModelUsed }), true);
+    } catch (e) { console.error(e); show(aiStatus, explainError(e), false); }
+    const trKey = (trInput.value.trim() || input.value.trim());
+    if (trKey) {
+      try { await googleTranslate('Hello', 'en', S.lang === 'en' ? 'el' : S.lang, trKey); show(trStatus, t('trOk'), true); }
+      catch (e) { console.warn(e); show(trStatus, t('trNo'), false); }
+    }
+  });
+}
+
+/* =========================================================
+   Feedback: toasts + screen-reader announcements
+   ========================================================= */
+function announce(msg) {
+  const a = $('#sr-announcer');
+  a.textContent = '';
+  setTimeout(() => { a.textContent = msg; }, 60);
+}
+function toast(msg, type = 'info', action) {
+  const tEl = el('div', { class: 'toast toast-' + type, role: type === 'error' ? 'alert' : null },
+    icon(type === 'error' ? 'triangle-exclamation' : 'circle-info'),
+    el('span', { text: msg }),
+    action ? el('button', { type: 'button', class: 'toast-action', onclick: () => { action.onClick(); tEl.remove(); } }, action.label) : null,
+    el('button', { type: 'button', 'aria-label': t('closeToast'), onclick: () => tEl.remove() }, icon('xmark')));
+  $('#toasts').append(tEl);
+  if (type !== 'error') { announce(msg); setTimeout(() => tEl.remove(), action ? 10000 : 6000); }
+}
+
+/* =========================================================
+   Input helpers
+   ========================================================= */
+let srcTimer;
+function updateCount() {
+  const words = $('#source-text').value.trim().split(/\s+/).filter(Boolean).length;
+  $('#char-count').textContent = t('words', { n: words, m: Math.max(1, Math.round(words / 200)) });
+}
+function bindInput() {
+  $('#source-text').addEventListener('input', () => {
+    updateCount();
+    clearTimeout(srcTimer);
+    srcTimer = setTimeout(() => { renderSource(); populateVoiceSelect(); }, 300);
+  });
+  $('#format-btn').addEventListener('click', processText);
+  $('#sample-btn').addEventListener('click', loadSample);
+  $('#print-btn').addEventListener('click', () => window.print());
+  $('#clear-btn').addEventListener('click', () => {
+    const prev = $('#source-text').value, prevData = lastData;
+    if (!prev) return;
+    $('#source-text').value = ''; lastData = null;
+    updateCount(); renderEmptyAll(); renderSource();
+    toast(t('cleared'), 'info', { label: t('undo'), onClick: () => {
+      $('#source-text').value = prev; updateCount();
+      if (prevData) renderAll(prevData); else renderSource();
+    } });
+  });
+}
+
+/* =========================================================
+   Init
+   ========================================================= */
+bindSettings();
+bindApiKey();
+bindRuler();
+bindTabs();
+bindInput();
+bindTranslate();
+bindTts();
+bindChat();
+bindVideo();
+applyI18n();
+</script>
+</body>
+</html>
